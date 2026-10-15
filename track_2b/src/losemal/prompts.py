@@ -1,4 +1,5 @@
-"""Prompts. The Zurich style guide is shared with the evaluation (src/eval/e3_generation.py)."""
+"""Prompts. ZURICH_STYLE_GUIDE is the one measured in E3 (src/eval/e3_generation.py) and stays as it was for the
+"how a local would say it" call and the glossary; the role-play uses DIALECT_RULES and a sample conversation."""
 from __future__ import annotations
 
 from .scenarios import Scenario
@@ -20,6 +21,26 @@ Regeln für Stadtzürcher Dialekt (Züritüütsch), geschrieben in üblicher Dia
 - Höflichkeitsform: «Chönd Sie …?», «Wänd Sie …?», «Händ Sie …?», «Bruuched Sie …?».
 - Schreib wirklich Dialekt, nicht Hochdeutsch mit ein paar Dialektwörtern."""
 
+# For the role-play: only the forms to use. Naming the wrong ones («nicht viu») can make a model more likely to
+# write them, and lines of the conversations still had viu, dr, hei. The sample conversation of each scene shows
+# the dialect in use.
+DIALECT_RULES = """Regeln für Stadtzürcher Dialekt (Züritüütsch), geschrieben in üblicher Dialektschreibung:
+- Zürcher Formen: ich bi, du bisch, er/si isch, mer sind, Sie sind; ich han, du häsch, er hät, mer händ, Sie händ;
+  ich chan, Sie chönd; ich wott, Sie wänd; ich mues; mer gönd, gömmer; nöd, gsi, und, ich, zwei;
+  Artikel de / d / s und en / e / es; öppis, nüt, chli, vil, Mal, hüt, geschter, morn, au, scho, gärn, jetzt,
+  dänn, eifach, vilicht.
+- Vergangenheit mit Perfekt: «ich bi gsi», «mer händ gmacht».
+- Grüezi / Uf Widerluege zu «Sie», Hoi / Sali / Tschüss zu «du». Merci (vilmal), Exgüsi, Gärn gscheh.
+- Typische Wörter: Velo, Tram, Billett, Trottoir, poschte, luege, lose, säge, verzelle, schaffe,
+  Znüni, Zmittag, Znacht, Gipfeli, Weggli, Rüebli, Poulet, Säckli, Händy, Charte.
+- Höflichkeitsform: «Chönd Sie …?», «Wänd Sie …?», «Händ Sie …?», «Bruuched Sie …?», «Zahled Sie …?».
+- Jeder Satz ganz auf Züritüütsch."""
+
+ADDRESS = {
+    "Sie": "Du sprichst die lernende Person mit «Sie» an (Grüezi, «Händ Sie …?», Uf Widerluege).",
+    "du": "Ihr duzt euch (Hoi, «Häsch du …?», Tschüss).",
+}
+
 # Standard German -> Zurich German, the prompt measured in E3. In the app (with the style guide) it gives the
 # learner's own sentence the way a local would say it, in a separate call that cannot mix it up with the reply.
 TRANSLATE_TO_ZURICH = ("Du übersetzt Hochdeutsch ins Zürichdeutsche (Züritüütsch), so wie eine Person aus der Stadt "
@@ -27,33 +48,38 @@ TRANSLATE_TO_ZURICH = ("Du übersetzt Hochdeutsch ins Zürichdeutsche (Züritü�
                        "übersetzten Satz.")
 
 LEVELS = {
-    "A2": "Die lernende Person ist Anfängerin (A2). Sprich sehr einfach: höchstens 1 kurzer Satz, "
-          "häufige Wörter, keine Redewendungen.",
+    "A2": "Die lernende Person ist Anfängerin (A2). Sprich sehr einfach: höchstens 1 kurzer Satz mit "
+          "häufigen Wörtern.",
     "B1": "Die lernende Person hat mittleres Niveau (B1). Sprich natürlich, aber kurz: 1–2 Sätze, Alltagswortschatz.",
     "B2": "Die lernende Person ist fortgeschritten (B2). Sprich wie im echten Leben: 1–2 Sätze, "
           "gern mit typischen Zürcher Ausdrücken.",
 }
 
-HELP_LANGS = {"en": "Englisch", "de": "Deutsch (einfaches Hochdeutsch)", "ru": "Russisch"}
+HELP_LANGS = {"en": "Englisch", "de": "Deutsch (einfaches Hochdeutsch)"}
 
 # Repeated in every turn message: in long conversations the replies grew to 3-5 sentences.
 REPLY_LENGTH = {"A2": "1 kurzer Satz", "B1": "1–2 kurze Sätze", "B2": "1–2 Sätze"}
 
+# Translations, word explanations and reply ideas come from separate short calls (see below): inside this
+# JSON the model sometimes described what it was doing instead of translating, and explained words in German.
+# A short reply also arrives sooner.
 TURN_SCHEMA = """\
 Antworte IMMER mit genau einem JSON-Objekt, ohne weiteren Text:
 {
   "reply_gsw": "deine nächste Äusserung in der Rolle, auf Züritüütsch",
-  "reply_de": "reply_gsw sinngemäss in natürlichem Hochdeutsch, gleiche Anrede (Sie/du), Gipfeli, Znüni, Velo usw. bleiben (nicht der Satz der lernenden Person)",
-  "reply_help": "reply_gsw sinngemäss auf {help_lang}, ohne etwas hinzuzufügen",
-  "words": [{"gsw": "Dialektwort aus reply_gsw", "de": "hochdeutsche Entsprechung", "hint": "kurze Erklärung auf {help_lang}"}],
-  "suggestions_de": ["eine mögliche Antwort der lernenden Person auf reply_gsw", "eine andere mögliche Antwort"],
   "scene_done": true | false
 }"""
 
 
-def system_prompt(sc: Scenario, level: str, help_lang: str) -> str:
-    lang = HELP_LANGS.get(help_lang, HELP_LANGS["en"])
-    schema = TURN_SCHEMA.replace("{help_lang}", lang)
+def example_dialogue(sc: Scenario) -> str:
+    return "\n".join(("Du: " if i % 2 == 0 else "Lernende Person: ") + line for i, line in enumerate(sc.example))
+
+
+# Every instruction says what to do: the old «don't» rules did not stop the model from repeating the price, and
+# the sample conversation does most of the work (see Scenario.example).
+def system_prompt(sc: Scenario, level: str) -> str:
+    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton, Dialekt und Ablauf; du reagierst immer auf das, "
+               f"was die lernende Person wirklich sagt):\n{example_dialogue(sc)}\n") if sc.example else ""
     return f"""\
 Du bist Teil der App «Los emal!», mit der Zugezogene lernen, Zürichdeutsch zu VERSTEHEN.
 In Zürich ist es normal, dass Zugezogene auf Hochdeutsch antworten, während Einheimische Dialekt sprechen.
@@ -61,30 +87,26 @@ Genau das üben wir: Du sprichst Züritüütsch, die lernende Person antwortet a
 
 Situation: {sc.setting}
 Deine Rolle: {sc.role}. Bleib in der Rolle und führe das Gespräch natürlich weiter.
-Dein Gegenüber ist die lernende Person, nicht du: {sc.learner} Setz nichts voraus, was sie dir noch nicht gesagt hat.
-Du kennst dich in deiner Rolle aus und hilfst konkret. Frag die lernende Person nie, was du selbst brauchst.
+Dein Gegenüber ist die lernende Person: {sc.learner} Was sie möchte, erfährst du von ihr.
+Du kennst dich in deiner Rolle aus und hilfst konkret mit dem, was du weisst.
+{ADDRESS.get(sc.address, ADDRESS["Sie"])}
+Ablauf: {sc.steps} Jede deiner Äusserungen bringt das Gespräch einen Schritt weiter; was geklärt ist, bleibt geklärt.
 {LEVELS.get(level, LEVELS['B1'])}
-
-{ZURICH_STYLE_GUIDE}
+{example}
+{DIALECT_RULES}
 
 Aufgaben in jeder Runde:
 1. reply_gsw: deine nächste Äusserung in der Rolle, auf Züritüütsch. Hat die lernende Person etwas gefragt,
    beantworte das zuerst konkret; danach höchstens eine kurze Frage, damit das Gespräch weitergeht.
-2. words: 1–3 Wörter oder Wendungen aus reply_gsw, die für Zugezogene am schwersten zu verstehen sind
-   (nur solche, die anders sind als auf Hochdeutsch); hint immer auf {lang}.
-3. suggestions_de: zwei verschiedene kurze Sätze, mit denen die lernende Person auf deine Äusserung reply_gsw
-   antworten könnte, aus ihrer Sicht («ich» ist die lernende Person) und auf ihrem Niveau. Wiederhole nicht,
-   was sie schon gesagt hat. Hochdeutsch, wie die lernende Person spricht, ohne Dialektwörter wie isch, zrugg,
-   morn (Schweizer Wörter wie Billett, Velo, Gipfeli sind gut).
-4. scene_done: true, wenn das Ziel erreicht ist oder das Gespräch natürlich endet; dann verabschiede dich.
-Ob die lernende Person dich verstanden hat und ob ihr Hochdeutsch stimmt, wird separat geprüft; du
-korrigierst sie nicht. Hat sie etwas anderes verstanden, sag es in der Rolle einfacher noch einmal.
+2. scene_done: true, sobald der Ablauf zu Ende ist; dann ist deine Äusserung ein kurzer Abschiedsgruss.
+Du reagierst inhaltlich auf ihre Antworten, wie im echten Leben; ob sie dich verstanden hat, prüft die App separat.
+Hat sie etwas anderes verstanden, sag es in der Rolle einfacher noch einmal.
 
-{schema}"""
+{TURN_SCHEMA}"""
 
 
-# Separate call: inside the role-play turn the model passed almost every learner error as correct (E4),
-# while this short, focused check finds most of them.
+# Evaluation only (E4): the app no longer corrects the learner's German. Inside the role-play turn the model
+# passed almost every learner error as correct, while this short, focused check finds most of them.
 GERMAN_CHECK = """\
 Prüfe, ob der folgende Satz einer lernenden Person grammatisch korrektes Hochdeutsch ist: Artikel und Genus, Kasus,
 Verbform und Hilfsverb (haben/sein), Partizip, Wortstellung, Präposition, Verneinung. Schweizer Hochdeutsch und
@@ -100,7 +122,7 @@ def german_check_message(text: str, help_lang: str) -> str:
 
 
 # Separate call as well: inside the role-play turn the model detected 3 of 20 misunderstandings (E4),
-# this focused check 19 of 20 without a false alarm.
+# this focused check 18 of 20 without a false alarm.
 COMPREHENSION_CHECK = """\
 Eine Person aus Zürich hat in einem Gespräch zu einer lernenden Person gesagt: «{gsw}»
 (auf Hochdeutsch: «{de}»). Die lernende Person hat geantwortet: «{answer}»
@@ -121,8 +143,76 @@ def opening_message(level: str = "B1") -> str:
             "Antworte nur mit JSON.")
 
 
-def learner_message(text: str, level: str = "B1", role: str = "") -> str:
-    you = f"Du bist weiterhin: {role}. " if role else ""
+def learner_message(text: str, level: str = "B1", role: str = "", address: str = "") -> str:
+    # The role and the form of address are repeated each turn: further into the conversation the model fell
+    # out of its role and from «Sie» into «du».
+    you = f"Du bist weiterhin: {role}" + (f", per {address}" if address else "") + ". " if role else ""
     return (f"{you}Die lernende Person antwortet dir (Hochdeutsch, Text aus Spracherkennung, kann Fehler haben):\n"
             f"«{text}»\nAntworte ihr in deiner Rolle (reply_gsw: höchstens "
             f"{REPLY_LENGTH.get(level, REPLY_LENGTH['B1'])}). Antworte nur mit JSON.")
+
+
+# The local's line in Standard German or the help language, one short call per language. The scene context
+# disambiguates (at the SBB counter «eifach» is a one-way ticket, not "simply").
+LANG_INTO = {"de": "ins Hochdeutsche", "en": "ins Englische"}
+TRANSLATE_LINE = """\
+Situation: {context}
+Übersetze, was die Person aus Zürich auf Züritüütsch gesagt hat, {into}. Übersetze genau das Gesagte, ohne
+etwas zu erklären oder hinzuzufügen, mit der gleichen Anrede (Sie/du).{keep} Antworte nur mit der Übersetzung.
+«{text}»"""
+
+
+def scene_context(sc: Scenario) -> str:
+    return f"{sc.role}. {sc.setting}"
+
+
+# For the help language we translate the Standard German version, which the model translates more reliably
+# than the dialect (from the dialect, «eifach» (one-way) became "simply" even with the scene as context).
+TRANSLATE_FROM_DE = """\
+Situation: {context}
+Hier ist auf Hochdeutsch, was die Person aus Zürich gesagt hat. Übersetze es {into}, genau und ohne etwas zu
+erklären oder hinzuzufügen. Antworte nur mit der Übersetzung.
+«{text}»"""
+
+
+def translate_message(text: str, target: str, context: str = "", from_de: bool = False) -> str:
+    context, into = context or "Alltag in Zürich", LANG_INTO.get(target, LANG_INTO["en"])
+    if from_de:
+        return TRANSLATE_FROM_DE.format(context=context, into=into, text=text)
+    keep = " Schweizer Wörter wie Gipfeli, Znüni, Velo, Billett bleiben." if target == "de" else ""
+    return TRANSLATE_LINE.format(context=context, into=into, keep=keep, text=text)
+
+
+# The hardest dialect words of the line. The explanation is requested in the help language itself:
+# asked in German for an explanation in another language, the model answered in German.
+HINT_IN = {"en": "short explanation of the meaning in English", "de": "kurze Erklärung der Bedeutung auf Hochdeutsch"}
+HARD_WORDS = """\
+Situation: {context}
+Die Person aus Zürich hat gesagt: «{text}»
+Welche 1–3 einzelnen Wörter oder kurzen Wendungen (höchstens drei Wörter, keine ganzen Sätze) darin verstehen
+Deutschlernende am schwersten, weil sie anders sind als auf Hochdeutsch? Schreib sie genau so, wie sie im Satz
+stehen, und erkläre ihre Bedeutung, nicht die Aussprache.
+Antworte nur mit JSON: {{"words": [{{"gsw": "Wort aus dem Satz", "de": "hochdeutsche Entsprechung", "hint": "{hint}"}}]}}"""
+
+
+def words_message(text: str, help_lang: str, context: str = "") -> str:
+    return HARD_WORDS.format(context=context or "Alltag in Zürich", text=text,
+                             hint=HINT_IN.get(help_lang, HINT_IN["en"]))
+
+
+# Two ideas for the learner's next reply, asked for separately once the local's line is there.
+SUGGEST = """\
+Situation: {context}
+Die lernende Person: {learner}
+Bisher hat sie gesagt: {said}
+Die Person aus Zürich hat gerade gesagt: «{line}»
+Schreib zwei verschiedene kurze Sätze, mit denen die lernende Person jetzt antworten könnte: aus ihrer Sicht
+(«ich» ist die lernende Person), auf ihrem Niveau ({level}), so dass das Gespräch ihrem Ziel näherkommt.
+Wiederhole nicht, was sie schon gesagt hat. Hochdeutsch ohne Dialektwörter wie isch, zrugg, morn
+(Schweizer Wörter wie Billett, Velo, Gipfeli sind gut).
+Antworte nur mit JSON: {{"ideas": ["erster Satz", "zweiter Satz"]}}"""
+
+
+def suggest_message(sc: Scenario, level: str, line: str, said: list[str]) -> str:
+    return SUGGEST.format(context=scene_context(sc), learner=sc.learner, line=line, level=level,
+                          said=" / ".join(f"«{x}»" for x in said) or "noch nichts")

@@ -17,7 +17,7 @@ import json
 
 from losemal.config import DATA_DIR
 from losemal.llm import ApertusClient
-from losemal.tutor import Session, Turn
+from losemal.tutor import Session, Turn, check_german
 
 from .common import normalise, out_dir, pct, pmap, write_jsonl
 
@@ -29,9 +29,9 @@ def run_item(cli: ApertusClient, item: dict) -> dict:
     s.turns = [Turn(reply_gsw=item["context_gsw"], reply_de=item["context_de"])]  # as the app has it
     try:
         t = s.respond(cli, item["learner_de"])
+        fb = check_german(cli, item["learner_de"], "en") or {}  # the app itself no longer corrects German
     except Exception as e:  # noqa: BLE001
         return dict(item, error=str(e))
-    fb = t.feedback or {}
     return dict(item, pred_ok=fb.get("ok") if fb else None, corrected=fb.get("corrected_de", ""),
                 tip=fb.get("tip", ""), pred_understood=t.understood, parse_ok=t.parse_ok,
                 reply_gsw=t.reply_gsw, seconds=round(t.seconds, 2))

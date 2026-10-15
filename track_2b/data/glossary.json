@@ -1,0 +1,598 @@
+{
+ "baeckerei": [
+  {
+   "gsw": "Gipfeli",
+   "de": "Croissant, Hörnchen",
+   "en": "croissant",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Weggli",
+   "de": "weiches Brötchen",
+   "en": "soft bread roll",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Ruchbrot",
+   "de": "dunkles Weizenbrot (aus Ruchmehl)",
+   "en": "dark wheat bread",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Was dörfs sii?",
+   "de": "Was darf es sein?",
+   "en": "What can I get you?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Suscht no öppis?",
+   "de": "Sonst noch etwas?",
+   "en": "Anything else?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Zum Mitnäh?",
+   "de": "Zum Mitnehmen?",
+   "en": "To take away?",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Twint",
+   "de": "Bezahl-App der Schweizer Banken",
+   "en": "Swiss mobile payment app",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Händ Sie …?",
+   "de": "Haben Sie …?",
+   "en": "Do you have …?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Gärn gscheh",
+   "de": "Gern geschehen",
+   "en": "You're welcome",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Uf Widerluege",
+   "de": "Auf Wiedersehen",
+   "en": "Goodbye",
+   "source": "apertus"
+  }
+ ],
+ "migros": [
+  {
+   "gsw": "Cumulus-Charte",
+   "de": "Cumulus-Karte, die Kundenkarte der Migros",
+   "en": "Cumulus card, Migros' loyalty card",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Pünkt sammle",
+   "de": "Punkte sammeln",
+   "en": "to collect points",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Säckli",
+   "de": "Tüte",
+   "en": "bag",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Bruuched Sie es Säckli?",
+   "de": "Brauchen Sie eine Tüte?",
+   "en": "Do you need a bag?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Mit Charte oder bar?",
+   "de": "Mit Karte oder bar?",
+   "en": "Card or cash?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Rappe",
+   "de": "Rappen, Hundertstel eines Frankens",
+   "en": "Swiss cents",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Kassezettel",
+   "de": "Kassenbon, Quittung",
+   "en": "receipt",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Händ Sie e …?",
+   "de": "Haben Sie eine …?",
+   "en": "Do you have a …?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "gärn",
+   "de": "gern",
+   "en": "gladly",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Uf Widerluege",
+   "de": "Auf Wiedersehen",
+   "en": "Goodbye",
+   "source": "apertus"
+  }
+ ],
+ "kreisbuero": [
+  {
+   "gsw": "Aamäldig",
+   "de": "Anmeldung",
+   "en": "registration",
+   "source": "added in review"
+  },
+  {
+   "gsw": "zügle",
+   "de": "umziehen",
+   "en": "to move house",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Händ Sie scho d Papiere zäme?",
+   "de": "Haben Sie die Unterlagen schon beisammen?",
+   "en": "Do you have your documents ready?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Mer bruuched de Pass oder d ID und de Mietvertrag.",
+   "de": "Wir brauchen den Pass oder die ID und den Mietvertrag.",
+   "en": "We need your passport or ID and the rental contract.",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Chönd Sie mir de Pass zeige?",
+   "de": "Können Sie mir den Pass zeigen?",
+   "en": "Could you show me your passport?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "unterschriibe",
+   "de": "unterschreiben",
+   "en": "to sign",
+   "source": "added in review"
+  },
+  {
+   "gsw": "luege",
+   "de": "schauen",
+   "en": "to look",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Exgüsi",
+   "de": "Entschuldigung",
+   "en": "Excuse me",
+   "source": "added in review"
+  }
+ ],
+ "arzt": [
+  {
+   "gsw": "Halsweh",
+   "de": "Halsschmerzen",
+   "en": "sore throat",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Ziischtig",
+   "de": "Dienstag",
+   "en": "Tuesday",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Dunschtig",
+   "de": "Donnerstag",
+   "en": "Thursday",
+   "source": "added in review"
+  },
+  {
+   "gsw": "viertel ab zäni",
+   "de": "Viertel nach zehn (10.15 Uhr)",
+   "en": "quarter past ten",
+   "source": "added in review"
+  },
+  {
+   "gsw": "halbi füfi",
+   "de": "halb fünf (16.30 Uhr)",
+   "en": "half past four",
+   "source": "added in review"
+  },
+  {
+   "gsw": "luege",
+   "de": "schauen (der Arzt schaut es sich an)",
+   "en": "to look, to have a look",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Chönd Sie …?",
+   "de": "Können Sie …?",
+   "en": "Can you …?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Wänd Sie …?",
+   "de": "Möchten Sie …?",
+   "en": "Would you like …?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Krankenkassenkarte",
+   "de": "Versichertenkarte der Krankenkasse",
+   "en": "health insurance card",
+   "source": "apertus"
+  }
+ ],
+ "sbb": [
+  {
+   "gsw": "eifach",
+   "de": "nur Hinfahrt",
+   "en": "one way",
+   "source": "apertus"
+  },
+  {
+   "gsw": "retour",
+   "de": "hin und zurück",
+   "en": "return",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Eifach oder retour?",
+   "de": "Einfach oder retour?",
+   "en": "One way or return?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Erschti oder zweiti Klass?",
+   "de": "Erste oder zweite Klasse?",
+   "en": "First or second class?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Halbtax",
+   "de": "Halbtax-Abo: Fahrten zum halben Preis",
+   "en": "half-fare travelcard",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Händ Sie es Halbtax?",
+   "de": "Haben Sie ein Halbtax?",
+   "en": "Do you have a half-fare card?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "es Billett löse",
+   "de": "ein Billett kaufen",
+   "en": "to buy a ticket",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Perron",
+   "de": "Bahnsteig",
+   "en": "platform",
+   "source": "added in review"
+  },
+  {
+   "gsw": "umstiige",
+   "de": "umsteigen",
+   "en": "to change trains",
+   "source": "added in review"
+  },
+  {
+   "gsw": "D Züg fahred jedi halbi Stund.",
+   "de": "Die Züge fahren jede halbe Stunde.",
+   "en": "Trains run every half hour.",
+   "source": "apertus, corrected"
+  }
+ ],
+ "nachbarin": [
+  {
+   "gsw": "Waschplan",
+   "de": "Plan, wer wann waschen darf",
+   "en": "laundry rota",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Wöschchuchi",
+   "de": "Waschküche",
+   "en": "laundry room",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Wöschtag",
+   "de": "Waschtag",
+   "en": "your laundry day",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "wösche",
+   "de": "waschen",
+   "en": "to do the laundry",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Tumbler",
+   "de": "Wäschetrockner",
+   "en": "tumble dryer",
+   "source": "apertus"
+  },
+  {
+   "gsw": "s Sieb vom Tumbler",
+   "de": "das Flusensieb des Trockners",
+   "en": "the dryer's lint filter",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Chäller",
+   "de": "Keller",
+   "en": "basement",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Stägehuus",
+   "de": "Treppenhaus",
+   "en": "stairwell",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Mittwuch",
+   "de": "Mittwoch",
+   "en": "Wednesday",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Gärn gscheh",
+   "de": "Gern geschehen",
+   "en": "You're welcome",
+   "source": "apertus, corrected"
+  }
+ ],
+ "buero": [
+  {
+   "gsw": "Hoi!",
+   "de": "Hallo!",
+   "en": "Hi!",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Znüni",
+   "de": "kleine Pause mit Imbiss am Vormittag",
+   "en": "mid-morning snack break",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Kafi",
+   "de": "Kaffee",
+   "en": "coffee",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Wuchenänd",
+   "de": "Wochenende",
+   "en": "weekend",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Wie isch dis Wuchenänd gsi?",
+   "de": "Wie war dein Wochenende?",
+   "en": "How was your weekend?",
+   "source": "added in review"
+  },
+  {
+   "gsw": "go wandere",
+   "de": "wandern gehen",
+   "en": "to go hiking",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Uetliberg",
+   "de": "Zürichs Hausberg",
+   "en": "Zurich's local mountain",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Velo",
+   "de": "Fahrrad",
+   "en": "bike",
+   "source": "apertus"
+  },
+  {
+   "gsw": "schaffe",
+   "de": "arbeiten",
+   "en": "to work",
+   "source": "apertus, corrected"
+  }
+ ],
+ "wohnung": [
+  {
+   "gsw": "Wohnig",
+   "de": "Wohnung",
+   "en": "flat",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Mietzins",
+   "de": "Miete",
+   "en": "rent",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Betreibungsauszug",
+   "de": "Auszug aus dem Betreibungsregister: zeigt, ob man Schulden hat",
+   "en": "debt collection record extract",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Frei ab em 1. Dezämber",
+   "de": "frei ab dem 1. Dezember",
+   "en": "available from 1 December",
+   "source": "apertus"
+  },
+  {
+   "gsw": "iizie",
+   "de": "einziehen",
+   "en": "to move in",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Wänn chönd Sie iizie?",
+   "de": "Wann können Sie einziehen?",
+   "en": "When can you move in?",
+   "source": "added in review"
+  },
+  {
+   "gsw": "zügle",
+   "de": "umziehen",
+   "en": "to move house",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Chömed Sie ine!",
+   "de": "Kommen Sie herein!",
+   "en": "Come in!",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Chönd Sie mir das mol verzelle?",
+   "de": "Können Sie mir das mal erzählen?",
+   "en": "Could you tell me about it?",
+   "source": "apertus, corrected"
+  }
+ ],
+ "restaurant": [
+  {
+   "gsw": "Was dörfs sii?",
+   "de": "Was darf es sein?",
+   "en": "What can I get you?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Und zum Trinke?",
+   "de": "Und was möchten Sie trinken?",
+   "en": "And to drink?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "e Mineral",
+   "de": "ein Mineralwasser",
+   "en": "a mineral water",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Rivella",
+   "de": "Schweizer Süssgetränk aus Milchserum",
+   "en": "Swiss soft drink made from whey",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Älplermagronen",
+   "de": "Teigwaren mit Kartoffeln, Käse und Röstzwiebeln",
+   "en": "Alpine macaroni with potatoes, cheese and onions",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Rösti",
+   "de": "gebratene geriebene Kartoffeln",
+   "en": "fried grated potatoes",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "En Guete!",
+   "de": "Guten Appetit!",
+   "en": "Enjoy your meal!",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Hät's gschmeckt?",
+   "de": "Hat es geschmeckt?",
+   "en": "Did you enjoy it?",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Zäme oder separat?",
+   "de": "Zusammen oder getrennt?",
+   "en": "Together or separately?",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Mir zahled separat.",
+   "de": "Wir zahlen getrennt.",
+   "en": "We'll pay separately.",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Exgüsi",
+   "de": "Entschuldigung",
+   "en": "Excuse me",
+   "source": "apertus"
+  }
+ ],
+ "tram": [
+  {
+   "gsw": "Exgüsi",
+   "de": "Entschuldigung",
+   "en": "Excuse me",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Wüssed Sie …?",
+   "de": "Wissen Sie …?",
+   "en": "Do you know …?",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Chönd Sie mir säge, wie ich zum Kunsthuus chume?",
+   "de": "Können Sie mir sagen, wie ich zum Kunsthaus komme?",
+   "en": "Could you tell me how to get to the Kunsthaus?",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "s Tram",
+   "de": "die Strassenbahn",
+   "en": "the tram",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "d Haltestell",
+   "de": "die Haltestelle",
+   "en": "the stop",
+   "source": "added in review"
+  },
+  {
+   "gsw": "umstiige",
+   "de": "umsteigen",
+   "en": "to change",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Kunsthuus",
+   "de": "Kunsthaus, das Kunstmuseum von Zürich",
+   "en": "Kunsthaus, Zurich's art museum",
+   "source": "apertus, corrected"
+  },
+  {
+   "gsw": "Es rägnet chli.",
+   "de": "Es regnet ein bisschen.",
+   "en": "It's raining a little.",
+   "source": "apertus"
+  },
+  {
+   "gsw": "Rägeschirm",
+   "de": "Regenschirm",
+   "en": "umbrella",
+   "source": "added in review"
+  },
+  {
+   "gsw": "Merci vilmal!",
+   "de": "Vielen Dank!",
+   "en": "Thanks a lot!",
+   "source": "added in review"
+  }
+ ]
+}

@@ -1,0 +1,422 @@
+{
+ "baeckerei": {
+  "gsw": "Grüezi! Was dörfs sii?",
+  "de": "Grüezi! Was darf es sein?",
+  "help": {
+   "en": "Hello! What can I get for you?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "Was dörfs sii?",
+     "de": "Was darf es sein?",
+     "hint": "A polite way to ask 'What would you like?' in a Swiss German context, commonly used in shops and cafes."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "Was dörfs sii?",
+     "de": "Was darf es sein?",
+     "hint": "Frage an den Kunden, was er bestellen möchte."
+    }
+   ]
+  },
+  "ideas": [
+   "Ich hätte gern zwei Gipfeli und ein Ruchbrot, bitte.",
+   "Könnte ich zwei Gipfeli und ein Ruchbrot bekommen? Vielen Dank."
+  ]
+ },
+ "migros": {
+  "gsw": "Grüezi! Händ Sie e Cumulus-Charte? Bruuched Sie es Säckli?",
+  "de": "Grüezi! Haben Sie eine Cumulus-Karte? Benötigen Sie eine Papiertasche?",
+  "help": {
+   "en": "Hello! Do you have a Cumulus card? Do you need a paper bag?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "Grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "A common Swiss German greeting used to say hello, similar to 'hello' or 'good day' in standard German."
+    },
+    {
+     "gsw": "Händ",
+     "de": "Haben",
+     "hint": "Swiss German contraction of 'haben' (to have), used in questions like 'Do you have...?'"
+    },
+    {
+     "gsw": "Bruuched",
+     "de": "Benötigen / Brauchen",
+     "hint": "Swiss German word for 'need' or 'do you need', used to ask if someone requires something."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "Grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "Zürcher Grußformel, wird verwendet, um jemanden freundlich zu begrüßen."
+    },
+    {
+     "gsw": "Händ",
+     "de": "Haben",
+     "hint": "Kurzform von 'haben' im Zürcher Dialekt, wird häufig verwendet."
+    },
+    {
+     "gsw": "Bruuched",
+     "de": "Benötigen / Brauchen",
+     "hint": "Zürcher Dialektform von 'brauchen', bedeutet dasselbe wie auf Hochdeutsch."
+    }
+   ]
+  },
+  "ideas": [
+   "Nein, ich habe keine Cumulus-Karte. Und ja, ich brauche eine Papiertasche, bitte.",
+   "Ich habe keine Cumulus-Karte. Könnten Sie mir bitte eine Papiertasche geben?"
+  ]
+ },
+ "kreisbuero": {
+  "gsw": "Grüezi! Was chan ich für Sie mache?",
+  "de": "Grüezi! Was kann ich für Sie tun?",
+  "help": {
+   "en": "Hello! How can I assist you?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "The Swiss German form of 'can' or 'be able to', used to express capability or possibility."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "Zürcher Variante von 'kann', um eine Möglichkeit oder Fähigkeit auszudrücken."
+    },
+    {
+     "gsw": "für Sie mache",
+     "de": "für Sie tun",
+     "hint": "Zürcher Ausdruck für 'etwas für Sie erledigen' oder 'Ihnen behilflich sein'."
+    }
+   ]
+  },
+  "ideas": [
+   "Grüezi! Ich bin neu nach Zürich gezogen und möchte mich anmelden. Welche Dokumente benötige ich dafür?",
+   "Ich habe vor Kurzem in Zürich eine Wohnung bezogen und muss mich innerhalb von 14 Tagen anmelden. Können Sie mir sagen, welche Unterlagen ich mitbringen muss?"
+  ]
+ },
+ "arzt": {
+  "gsw": "Praxis Doktor Meier, grüezi! Wie chan ich Ihne hälfe?",
+  "de": "Praxis Doktor Meier, Grüezi! Wie kann ich Ihnen helfen?",
+  "help": {
+   "en": "Dr. Meier's practice, hello! How can I help you?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "Swiss German greeting used in Zurich, equivalent to 'hello' or 'good day' in standard German"
+    },
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "Swiss German contraction of 'können', meaning 'to be able to'"
+    },
+    {
+     "gsw": "Ihne",
+     "de": "Ihnen",
+     "hint": "Swiss German dative form of 'you', used when addressing someone formally or when showing respect"
+    }
+   ],
+   "de": [
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "Zürcher Variante des Modalverbs 'können', bedeutet die Fähigkeit oder Erlaubnis, etwas zu tun."
+    },
+    {
+     "gsw": "Ihne",
+     "de": "Ihnen",
+     "hint": "Dativform des Pronomens 'Sie', zeigt die indirekte Anrede einer respektvollen oder fremden Person auf Schweizerdeutsch."
+    }
+   ]
+  },
+  "ideas": [
+   "Guten Morgen! Ich habe Halsschmerzen und würde gerne einen Termin vereinbaren. Haben Sie noch freie Termine diese Woche?",
+   "Ich habe seit ein paar Tagen starke Halsschmerzen und bräuchte einen Arzttermin. Wie sieht es mit freien Terminen diese Woche aus?"
+  ]
+ },
+ "sbb": {
+  "gsw": "Grüezi, wie chan ich Ihne hälfe?",
+  "de": "Grüezi, wie kann ich Ihnen helfen?",
+  "help": {
+   "en": "Hello, how can I assist you?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "The Swiss German form of 'can', used to ask about ability or possibility."
+    },
+    {
+     "gsw": "Ihne",
+     "de": "Ihnen",
+     "hint": "The Swiss German dative form of 'you', used when addressing someone formally or when showing respect."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "chan",
+     "de": "kann",
+     "hint": "Konjugation des Verbs 'können' im Schweizerdeutschen, bedeutet die Fähigkeit oder Erlaubnis, etwas zu tun."
+    },
+    {
+     "gsw": "Ihne",
+     "de": "Ihnen",
+     "hint": "Dativform von 'Sie' im Schweizerdeutschen, zeigt die indirekte Objektform an, vergleichbar mit 'Ihnen' auf Hochdeutsch."
+    }
+   ]
+  },
+  "ideas": [
+   "Grüezi, ich möchte ein Retourbillett nach Luzern für morgen kaufen. Ich habe ein Halbtax.",
+   "Könnten Sie mir bitte ein Retourbillett für Luzern in der 2. Klasse mit Halbtax besorgen?"
+  ]
+ },
+ "nachbarin": {
+  "gsw": "Grüezi! Ich bi d Martha, ich wohne scho drissg Jahr da im Huus. Sie sind sicher neu da?",
+  "de": "Grüezi! Ich bin die Martha, ich wohne schon dreissig Jahre hier im Haus. Sie sind sicher neu da?",
+  "help": {
+   "en": "Hello! I'm Martha, I've been living in this house for thirty years. You must be new here?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "bi",
+     "de": "bin",
+     "hint": "«Ich bi» = I am"
+    },
+    {
+     "gsw": "drissg",
+     "de": "dreissig",
+     "hint": "thirty"
+    },
+    {
+     "gsw": "Huus",
+     "de": "Haus",
+     "hint": "house: Zurich German keeps the long «uu» where Standard German has «au»"
+    }
+   ],
+   "de": [
+    {
+     "gsw": "bi",
+     "de": "bin",
+     "hint": "«Ich bi» = ich bin"
+    },
+    {
+     "gsw": "drissg",
+     "de": "dreissig",
+     "hint": "die Zahl 30"
+    },
+    {
+     "gsw": "Huus",
+     "de": "Haus",
+     "hint": "langes «uu» statt «au», wie in Muus (Maus)"
+    }
+   ]
+  },
+  "ideas": [
+   "Grüezi Martha, ich bin neu hier eingezogen und freue mich auf die Nachbarschaft.",
+   "Könnten Sie mir bitte den Waschplan erklären? Ich habe gehört, dass jede Wohnung einen festen Tag hat."
+  ]
+ },
+ "buero": {
+  "gsw": "Hoi! Was häsch du übers Wuchenänd gmacht?",
+  "de": "Hoi! Was hast du am Wochenende gemacht?",
+  "help": {
+   "en": "Hey! What did you do over the weekend?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "häsch",
+     "de": "hast",
+     "hint": "Second person singular form of 'haben' (to have) in Swiss German, used informally."
+    },
+    {
+     "gsw": "Wuchenänd",
+     "de": "Wochenende",
+     "hint": "Swiss German term for 'weekend'."
+    },
+    {
+     "gsw": "Hoi",
+     "de": "Hallo",
+     "hint": "Informal Swiss German greeting, equivalent to 'Hi' or 'Hello' in standard German."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "häsch",
+     "de": "hast",
+     "hint": "2. Person Singular Konjugation des Verbs 'haben' in der Zürcher Umgangssprache (Präsens)"
+    },
+    {
+     "gsw": "Wuchenänd",
+     "de": "Wochenende",
+     "hint": "Bezeichnung für den Zeitraum von Freitagabend bis Sonntagabend"
+    },
+    {
+     "gsw": "Hoi",
+     "de": "Hallo",
+     "hint": "Informelle, regionale Begrüßungsformel im Raum Zürich"
+    }
+   ]
+  },
+  "ideas": [
+   "Ich war am Samstag auf dem Uetliberg wandern und habe die schöne Aussicht genossen.",
+   "Am Sonntag habe ich das Fussballspiel des FC Zürich im Letzigrundstadion besucht."
+  ]
+ },
+ "wohnung": {
+  "gsw": "Grüezi, chömed Sie ine! Ich bi d Frau Keller vo de Verwaltig. Händ Sie Frage zur Wohnig?",
+  "de": "Grüezi, kommen Sie herein! Ich bin Frau Keller von der Verwaltung. Haben Sie Fragen zur Wohnung?",
+  "help": {
+   "en": "Hello, please come in! I am Ms. Keller from the property management. Do you have any questions about the apartment?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "Grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "Swiss German greeting used to say hello, similar to 'hello' or 'good day' in standard German."
+    },
+    {
+     "gsw": "chömed",
+     "de": "kommen",
+     "hint": "Swiss German verb for 'to come', used here as an invitation to enter."
+    },
+    {
+     "gsw": "ine",
+     "de": "herein",
+     "hint": "in(to): «Chömed Sie ine!» = Come in!"
+    }
+   ],
+   "de": [
+    {
+     "gsw": "Grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "Eine typische Schweizer Begrüßungsformel, die im Alltag verwendet wird und nicht wörtlich übersetzt werden kann."
+    },
+    {
+     "gsw": "chömed",
+     "de": "kommen",
+     "hint": "Höflichkeitsform: «chömed Sie» = kommen Sie"
+    },
+    {
+     "gsw": "ine",
+     "de": "herein",
+     "hint": "«ine» = herein, hinein: «Chömed Sie ine!» = Kommen Sie herein!"
+    }
+   ]
+  },
+  "ideas": [
+   "Grüezi Frau Keller, ich interessiere mich für die Wohnung. Wie hoch ist die Miete inklusive Nebenkosten?",
+   "Und wann ist der frühestmögliche Einzugstermin? Ich würde gerne ab dem 1. Dezember einziehen."
+  ]
+ },
+ "restaurant": {
+  "gsw": "Grüezi mitenand! Was dörfs sii zum Zmittag?",
+  "de": "Grüezi miteinander! Was darf es zum Mittagessen sein?",
+  "help": {
+   "en": "Hello everyone! What may I get you for lunch?"
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "Grüezi",
+     "de": "Grüß Gott / Guten Tag",
+     "hint": "A traditional Swiss-German greeting used in Zurich and surrounding areas, equivalent to 'Hello' or 'Good day' in standard German."
+    },
+    {
+     "gsw": "dörfs",
+     "de": "darf",
+     "hint": "A dialectal form of 'darf' (may), used in questions about permission to order food or drink."
+    },
+    {
+     "gsw": "Zmittag",
+     "de": "Mittagessen",
+     "hint": "A Swiss-German term for 'lunch', combining 'zu' (to) and 'Mittag' (noon/daytime), meaning the midday meal."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "Zmittag",
+     "de": "Mittagessen",
+     "hint": "«z Mittag» = das Mittagessen"
+    },
+    {
+     "gsw": "mitenand",
+     "de": "miteinander",
+     "hint": "zürcherische Variante von 'miteinander', drückt Gemeinschaft aus"
+    },
+    {
+     "gsw": "Was dörfs sii?",
+     "de": "Was darf es sein?",
+     "hint": "Frage nach der Speiseauswahl, 'dörfs' ist zürcherische Kurzform von 'darf es sein'"
+    }
+   ]
+  },
+  "ideas": [
+   "Ich nehme das Zürcher Geschnetzelte mit Rösti und ein Mineralwasser, bitte.",
+   "Und ich hätte gern das Zürcher Geschnetzelte mit Rösti sowie ein Glas Weisswein, vielen Dank."
+  ]
+ },
+ "tram": {
+  "gsw": "Exgüsi, chönd Sie mir säge, wie ich zum Kunsthuus chume? Ich bi no nie dört gsi.",
+  "de": "Entschuldigung, können Sie mir sagen, wie ich zum Kunsthaus komme? Ich war noch nie dort.",
+  "help": {
+   "en": "Excuse me, can you tell me how to get to the Kunsthaus? I've never been there before."
+  },
+  "words": {
+   "en": [
+    {
+     "gsw": "Exgüsi",
+     "de": "Entschuldigung",
+     "hint": "A polite way to get someone's attention or apologize for bothering them, used in Swiss German."
+    },
+    {
+     "gsw": "chönd",
+     "de": "können",
+     "hint": "Modal verb used to ask for permission or ability to do something, similar to 'can' in English."
+    },
+    {
+     "gsw": "bi",
+     "de": "bin",
+     "hint": "First person singular form of the verb 'sein' (to be), used in Swiss German."
+    }
+   ],
+   "de": [
+    {
+     "gsw": "Exgüsi",
+     "de": "Entschuldigung",
+     "hint": "Bitte um Verzeihung oder um Aufmerksamkeit, um eine Frage zu stellen."
+    },
+    {
+     "gsw": "chönd",
+     "de": "können",
+     "hint": "Frage nach der Möglichkeit, etwas zu tun (hier: mir etwas sagen)."
+    },
+    {
+     "gsw": "bi",
+     "de": "bin",
+     "hint": "1. Person Singular Präsens von 'sein' (ich bin)."
+    }
+   ]
+  },
+  "ideas": [
+   "Nehmen Sie das Tram 3 Richtung Klusplatz bis zur Haltestelle Kunsthaus.",
+   "Zu Fuss sind es etwa zehn Minuten. Ich zeige Ihnen den Weg."
+  ]
+ }
+}

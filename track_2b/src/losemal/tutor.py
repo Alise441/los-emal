@@ -1,6 +1,9 @@
-"""Conversation logic: per learner turn, the role-play turn and, in parallel, three short Apertus calls one
-after the other (checks of the learner's Standard German and comprehension, then the learner's sentence in
-Zurich German), combined into a validated Turn."""
+"""Conversation logic. Per learner turn: the role-play turn and, in parallel, short Apertus calls (did the
+learner understand the local's line, the learner's sentence in Zurich German). Once the local's line is
+there, translate(), hard_words() and suggest_replies() add its translations, hard words and two ideas for
+the learner's answer, again in short calls; a scene's first line comes ready-made (Session.open_with).
+Apertus does short, single tasks far more reliably than many fields in one reply (technical report, E4).
+The app trains understanding: it does not correct the learner's German."""
 from __future__ import annotations
 
 import logging
@@ -11,7 +14,8 @@ from difflib import SequenceMatcher
 
 from .llm import ApertusClient, LLMError, extract_json
 from .prompts import (TRANSLATE_TO_ZURICH, ZURICH_STYLE_GUIDE, comprehension_message, german_check_message,
-                      learner_message, opening_message, system_prompt)
+                      learner_message, opening_message, scene_context, suggest_message, system_prompt,
+                      translate_message, words_message)
 from .scenarios import BY_ID, Scenario
 
 log = logging.getLogger(__name__)
@@ -28,7 +32,6 @@ class Turn:
     words: list[dict] = field(default_factory=list)
     understood: bool | None = None
     understood_note: str = ""
-    feedback: dict | None = None
     local_gsw: str = ""
     suggestions_de: list[str] = field(default_factory=list)
     scene_done: bool = False
@@ -55,20 +58,8 @@ def to_turn(data: dict | None, raw: str, learner_text: str, seconds: float) -> T
         text = raw.strip().strip("{}").strip() or "Exgüsi, chönd Sie das nomal säge?"
         return Turn(reply_gsw=text[:400], learner_text=learner_text, seconds=seconds, parse_ok=False)
 
-    words = []
-    for w in data.get("words") or []:
-        if isinstance(w, dict) and _s(w.get("gsw")):
-            words.append({"gsw": _s(w.get("gsw")), "de": _s(w.get("de")), "hint": _s(w.get("hint"))})
-
-    feedback = parse_feedback(data.get("feedback"), learner_text)
-    sugg =[_s(x) for x in (data.get("suggestions_de") or []) if _s(x)][:3]
     return Turn(
         reply_gsw=_s(data.get("reply_gsw")),
-        reply_de=_s(data.get("reply_de")),
-        reply_help=_s(data.get("reply_help")),
-        words=words[:3],
-        feedback=feedback,
-        suggestions_de=sugg,
         scene_done=bool(_b(data.get("scene_done"))),
         learner_text=learner_text,
         seconds=seconds,
@@ -76,6 +67,7 @@ def to_turn(data: dict | None, raw: str, learner_text: str, seconds: float) -> T
 
 
 def parse_feedback(fb, learner_text: str) -> dict | None:
+    """Verdict of the Standard German check (evaluation E4 only; the app does not correct German)."""
     if not isinstance(fb, dict) or not learner_text:
         return None
     ok = _b(fb.get("ok"))
@@ -120,7 +112,7 @@ def check_comprehension(client: ApertusClient, said: Turn, answer: str, help_lan
 
 
 def check_german(client: ApertusClient, learner_text: str, help_lang: str) -> dict | None:
-    """Short, focused check of the learner's Standard German; None if it fails (the turn still goes on)."""
+    """Short, focused check of the learner's Standard German; None if it fails. Used by the evaluation (E4)."""
     try:
         reply = client.chat([{"role": "user", "content": german_check_message(learner_text, help_lang)}],
                             temperature=0.0, max_tokens=200)
@@ -128,6 +120,71 @@ def check_german(client: ApertusClient, learner_text: str, help_lang: str) -> di
         log.warning("Standard German check failed: %s", e)
         return None
     return parse_feedback(extract_json(reply.text), learner_text)
+
+
+def translate_line(client: ApertusClient, text: str, target: str, context: str = "", from_de: bool = False) -> str:
+    """The local's line (or its Standard German version) in Standard German or the help language; "" if it fails."""
+    try:
+        reply = client.chat([{"role": "user", "content": translate_message(text, target, context, from_de)}],
+                            temperature=0.0, max_tokens=200)
+    except LLMError as e:
+        log.warning("Translation (%s) failed: %s", target, e)
+        return ""
+    return reply.text.strip().split("\n\n")[0].strip().strip('"„“«»').strip()
+
+
+def hard_words(client: ApertusClient, text: str, help_lang: str, context: str = "") -> list[dict]:
+    """1-3 dialect words of the line with their Standard German meaning, explained in the help language."""
+    try:
+        reply = client.chat([{"role": "user", "content": words_message(text, help_lang, context)}],
+                            temperature=0.0, max_tokens=300)
+    except LLMError as e:
+        log.warning("Word explanations failed: %s", e)
+        return []
+    return clean_words((extract_json(reply.text) or {}).get("words"), text)
+
+
+def clean_words(items, line: str) -> list[dict]:
+    """Keep short, well-formed words that actually occur in the line (the model sometimes invents one or
+    returns a whole sentence)."""
+    words = []
+    for w in items if isinstance(items, list) else []:
+        gsw = _s(w.get("gsw")) if isinstance(w, dict) else ""
+        if gsw and len(gsw.split()) <= 3 and _norm(gsw) in _norm(line):
+            words.append({"gsw": _s(w.get("gsw")), "de": _s(w.get("de")), "hint": _s(w.get("hint"))})
+    return words[:3]
+
+
+def translate(client: ApertusClient, turn: Turn, help_lang: str, sc: Scenario | None = None) -> None:
+    """The local's line in Standard German, then in the help language from that version (which the model
+    translates more reliably than the dialect)."""
+    context = scene_context(sc) if sc else ""
+    turn.reply_de = translate_line(client, turn.reply_gsw, "de", context)
+    turn.reply_help = ""
+    if help_lang != "de":
+        turn.reply_help = translate_line(client, turn.reply_de or turn.reply_gsw, help_lang, context,
+                                         from_de=bool(turn.reply_de))
+
+
+def explain(client: ApertusClient, turn: Turn, help_lang: str, sc: Scenario | None = None) -> None:
+    """Translations and hard words of the local's line: separate short calls, two at a time."""
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        words = pool.submit(hard_words, client, turn.reply_gsw, help_lang, scene_context(sc) if sc else "")
+        translate(client, turn, help_lang, sc)
+        turn.words = words.result()
+
+
+def suggest_replies(client: ApertusClient, sess: Session) -> list[str]:
+    """Two ideas for the learner's answer to the local's latest line; [] if the call fails."""
+    said = [t.learner_text for t in sess.turns if t.learner_text]
+    message = suggest_message(sess.scenario, sess.level, sess.turns[-1].reply_gsw, said)
+    try:
+        reply = client.chat([{"role": "user", "content": message}], temperature=0.4, max_tokens=200)
+    except LLMError as e:
+        log.warning("Reply ideas failed: %s", e)
+        return []
+    ideas = (extract_json(reply.text) or {}).get("ideas")
+    return clean_suggestions([_s(x) for x in ideas if _s(x)] if isinstance(ideas, list) else [], said)[:2]
 
 
 def local_version(client: ApertusClient, learner_text: str) -> str:
@@ -172,15 +229,13 @@ class Session:
         hist = self.history[-MAX_HISTORY:]
         if hist and hist[0]["role"] == "assistant":
             hist = hist[1:]
-        return ([{"role": "system", "content": system_prompt(self.scenario, self.level, self.help_lang)}]
+        return ([{"role": "system", "content": system_prompt(self.scenario, self.level)}]
                 + hist + [{"role": "user", "content": new_user}])
 
     def _run(self, client: ApertusClient, user_msg: str, learner_text: str) -> Turn:
         data, reply = client.chat_json(self._messages(user_msg))
         turn = to_turn(data, reply.text, learner_text, reply.seconds)
-        said = [t.learner_text for t in self.turns if t.learner_text] + ([learner_text] if learner_text else [])
-        turn.suggestions_de = clean_suggestions(turn.suggestions_de, said)
-        learner_turns = len(said)
+        learner_turns = sum(1 for t in self.turns if t.learner_text) + (1 if learner_text else 0)
         if learner_turns >= MAX_TURNS:
             turn.scene_done = True
         self.history += [{"role": "user", "content": learner_text or "(Die Szene beginnt.)"},
@@ -192,20 +247,39 @@ class Session:
         self.history, self.turns = [], []
         return self._run(client, opening_message(self.level), "")
 
+    def open_with(self, opening: dict) -> Turn:
+        """Start from a line generated in advance (data/openings.json): no waiting at the start of a scene."""
+        lang = self.help_lang
+        words = opening.get("words", {})
+        turn = Turn(reply_gsw=opening["gsw"], reply_de=opening.get("de", ""),
+                    reply_help=opening.get("help", {}).get(lang, "") if lang != "de" else "",
+                    words=list(words.get(lang, words.get("en", []))), suggestions_de=list(opening.get("ideas", [])))
+        self.history = [{"role": "user", "content": "(Die Szene beginnt.)"}, {"role": "assistant", "content": turn.reply_gsw}]
+        self.turns = [turn]
+        return turn
+
+    def check_answer(self, client: ApertusClient, said: Turn | None, learner_text: str) -> tuple[bool | None, str, str]:
+        """Did the learner understand `said`, and the learner's sentence in Zurich German (one call after the
+        other): (understood, note, local version)."""
+        understood, note = check_comprehension(client, said, learner_text, self.help_lang) if said else (None, "")
+        return understood, note, local_version(client, learner_text)
+
+    def reply(self, client: ApertusClient, learner_text: str) -> Turn:
+        """The local's next line (the role-play call)."""
+        sc = self.scenario
+        return self._run(client, learner_message(learner_text, self.level, sc.role, sc.address), learner_text)
+
     def respond(self, client: ApertusClient, learner_text: str) -> Turn:
+        """check_answer() and reply() together; the app runs them itself to show the feedback first."""
         learner_text = learner_text.strip()
         if not learner_text:
             raise LLMError("empty learner input")
-        # The two checks and the Zurich version run one after the other while the role-play turn is generated:
-        # never more than two requests at once (Featherless allows two).
+        # The checks run while the role-play turn is generated: never more than two requests at once
+        # (Featherless allows two).
         with ThreadPoolExecutor(max_workers=1) as pool:
-            said = self.turns[-1] if self.turns else None
-            check = pool.submit(check_german, client, learner_text, self.help_lang)
-            heard = pool.submit(check_comprehension, client, said, learner_text, self.help_lang) if said else None
-            local = pool.submit(local_version, client, learner_text)
-            turn = self._run(client, learner_message(learner_text, self.level, self.scenario.role), learner_text)
-            turn.feedback, turn.local_gsw = check.result(), local.result()
-            turn.understood, turn.understood_note = heard.result() if heard else (None, "")
+            checks = pool.submit(self.check_answer, client, self.turns[-1] if self.turns else None, learner_text)
+            turn = self.reply(client, learner_text)
+            turn.understood, turn.understood_note, turn.local_gsw = checks.result()
         return turn
 
     def words_seen(self) -> list[dict]:

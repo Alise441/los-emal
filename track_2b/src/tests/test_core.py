@@ -4,9 +4,10 @@ import json
 from eval.e3_generation import markers
 from losemal.config import DATA_DIR
 from losemal.llm import LLMReply, extract_json, flatten_conversation, fold_system
-from losemal.prompts import system_prompt
+from losemal.prompts import scene_context, system_prompt, translate_message, words_message
 from losemal.scenarios import BY_ID, SCENARIOS
-from losemal.tutor import Session, Turn, clean_local, clean_suggestions, to_turn
+from losemal.tutor import (Session, Turn, clean_local, clean_suggestions, clean_words, explain, parse_feedback,
+                           suggest_replies, to_turn)
 
 
 def test_extract_json_tolerates_fences_and_chatter():
@@ -27,19 +28,18 @@ def test_flatten_conversation_keeps_history_in_one_user_turn():
                      "content": "[Anweisungen]\nS\n\n[Bisheriges Gespräch]\nLernende Person: A\nDu: B\n\n[Nachricht]\nC"}]
 
 
-def test_to_turn_validates_and_drops_fake_corrections():
-    data = {"reply_gsw": "Grüezi!", "words": [{"gsw": "Säckli", "de": "Tüte"}, "x"],
-            "feedback": {"ok": False, "corrected_de": "Ich hätte gern ein Brot.", "tip": "t"}}
-    t = to_turn(data, "", "Ich hätte gern ein Brot", 1.0)
-    assert t.words == [{"gsw": "Säckli", "de": "Tüte", "hint": ""}]
-    assert t.feedback["ok"] is True  # identical "correction" is not a correction
+def test_hard_words_must_occur_in_the_line():
+    items = [{"gsw": "Säckli", "de": "Tüte"}, "x", {"gsw": "gmacht", "de": "gemacht"}, {"de": "ohne gsw"},
+             {"gsw": "Bruuched Sie es Säckli", "de": "ganzer Satz"}]
+    assert clean_words(items, "Bruuched Sie es Säckli?") == [{"gsw": "Säckli", "de": "Tüte", "hint": ""}]
+    assert clean_words(None, "Grüezi") == []
 
 
-def test_to_turn_shows_no_feedback_without_a_verdict():
-    data = {"reply_gsw": "Grüezi!", "feedback": {"ok": None, "corrected_de": "", "tip": ""}}
-    assert to_turn(data, "", "Ich brauche ein Tüte", 1.0).feedback is None
-    data["feedback"] = {"ok": False, "corrected_de": "", "tip": "falsch"}  # "wrong" with nothing to show
-    assert to_turn(data, "", "Ich brauche ein Tüte", 1.0).feedback is None
+def test_german_check_verdicts_are_validated():  # used by the evaluation (E4)
+    fake = {"ok": False, "corrected_de": "Ich hätte gern ein Brot.", "tip": "t"}
+    assert parse_feedback(fake, "Ich hätte gern ein Brot")["ok"] is True  # identical "correction"
+    assert parse_feedback({"ok": None, "corrected_de": "", "tip": ""}, "Ich brauche ein Tüte") is None
+    assert parse_feedback({"ok": False, "corrected_de": "", "tip": "falsch"}, "Ich brauche ein Tüte") is None
 
 
 def test_suggestions_are_new_and_in_standard_german():
@@ -60,44 +60,93 @@ def test_to_turn_falls_back_to_raw_text():
     assert t.reply_gsw == "Grüezi wohl" and not t.parse_ok
 
 
-def test_prompt_contains_scenario_and_help_language():
-    p = system_prompt(BY_ID["sbb"], "A2", "ru")
-    assert "Halbtax" in p and "Russisch" in p and "nöd" in p
+def test_prompts_contain_scenario_and_help_language():
+    p = system_prompt(BY_ID["sbb"], "A2")
+    assert "Halbtax" in p and "nöd" in p and "reply_de" not in p  # translations come from separate calls
+    assert "ins Englische" in translate_message("Grüezi", "en") and "in English" in words_message("Grüezi", "en")
+    assert "Mitarbeiter am Schalter. SBB Reisezentrum im Hauptbahnhof Zürich" in translate_message(
+        "Eifach oder retour?", "en", scene_context(BY_ID["sbb"]))
+    assert "Gipfeli" in translate_message("Grüezi", "de")  # Swiss words stay in the Standard German version
+
+
+def test_scenes_have_a_sample_conversation_and_positive_rules():
+    from losemal.prompts import DIALECT_RULES
+    opening = json.loads((DATA_DIR / "openings.json").read_text(encoding="utf-8"))
+    for s in SCENARIOS:
+        assert s.address in ("Sie", "du") and s.steps and len(s.example) >= 7
+        assert s.example[0] == opening[s.id]["gsw"]  # the sample starts where the scene starts
+        assert f"Lernende Person: {s.example[1]}" in system_prompt(s, "B1")
+    assert "nicht" not in DIALECT_RULES  # only the forms to use (see prompts.py)
 
 
 def test_prompt_never_addresses_the_model_with_the_learners_goal():
     # The learner's goal card says «du»; inside the prompt «du» is the model, which then asked the learner
     # which documents it needed. The model gets the third-person description instead.
     for s in SCENARIOS:
-        p = system_prompt(s, "B1", "en")
+        p = system_prompt(s, "B1")
         assert s.goal["de"] not in p and s.learner in p
 
 
 class FakeClient:
-    """Answers the Standard German check, the Zurich version and the role-play turn differently."""
+    """Answers the comprehension check, the Zurich version and the role-play turn differently."""
 
     def chat(self, messages, **kw):
-        if messages[-1]["content"].startswith("Prüfe"):
-            return LLMReply('{"ok": false, "corrected_de": "Ich brauche eine Tüte.", "tip": "die Tüte"}', 0.1, "fake")
+        assert not messages[-1]["content"].startswith("Prüfe"), "the app must not correct the learner's German"
         if messages[0]["content"].startswith("Du übersetzt"):
             return LLMReply("I bruuch e Täsche.", 0.1, "fake")
-        if messages[-1]["content"].startswith("Eine Person aus Zürich"):
+        if messages[-1]["content"].startswith("Eine Person aus Zürich hat in einem Gespräch"):
             return LLMReply('{"fits": false, "note": "She asked about a bag."}', 0.1, "fake")
-        return LLMReply('{"reply_gsw": "Gärn, da isch es Säckli.", "feedback": {"ok": true}}', 0.2, "fake")
+        if "ins Hochdeutsche" in messages[-1]["content"]:
+            return LLMReply("«Brauchen Sie eine Tüte?»\n\nHinweis: …", 0.1, "fake")
+        if "ins Englische" in messages[-1]["content"]:
+            assert "«Brauchen Sie eine Tüte?»" in messages[-1]["content"]  # translated from Standard German
+            return LLMReply("Do you need a bag?", 0.1, "fake")
+        if "Schreib zwei verschiedene kurze Sätze" in messages[-1]["content"]:
+            return LLMReply('{"ideas": ["Ja, gern eine Tüte.", "Ja, gern eine Tüte!", "Nei, i bruuch keis Säckli."]}',
+                            0.1, "fake")
+        if "Welche 1–3" in messages[-1]["content"]:
+            return LLMReply('{"words": [{"gsw": "Säckli", "de": "Tüte", "hint": "small bag"}, '
+                            '{"gsw": "Täsche", "de": "Tasche"}]}', 0.1, "fake")
+        return LLMReply('{"reply_gsw": "Gärn, da isch es Säckli."}', 0.2, "fake")
 
     def chat_json(self, messages, **kw):
         reply = self.chat(messages)
         return extract_json(reply.text), reply
 
 
-def test_feedback_comes_from_the_separate_german_check():
+def test_comprehension_and_zurich_version_come_from_separate_calls():
     s = Session("migros")
     s.turns = [Turn(reply_gsw="Bruuched Sie es Säckli?", reply_de="Brauchen Sie eine Tüte?")]
     t = s.respond(FakeClient(), "Ich brauche ein Tüte.")
     assert t.reply_gsw == "Gärn, da isch es Säckli."
-    assert t.feedback == {"ok": False, "corrected_de": "Ich brauche eine Tüte.", "tip": "die Tüte"}
     assert t.local_gsw == "I bruuch e Täsche."
     assert t.understood is False and t.understood_note == "She asked about a bag."
+
+
+def test_explain_fills_translations_and_words_from_separate_calls():
+    turn = Turn(reply_gsw="Bruuched Sie es Säckli?")
+    explain(FakeClient(), turn, "en")
+    assert turn.reply_de == "Brauchen Sie eine Tüte?" and turn.reply_help == "Do you need a bag?"
+    assert turn.words == [{"gsw": "Säckli", "de": "Tüte", "hint": "small bag"}]  # «Täsche» is not in the line
+    explain(FakeClient(), turn, "de")
+    assert turn.reply_help == ""  # German help needs no second translation
+
+
+def test_reply_ideas_are_separate_and_in_standard_german():
+    s = Session("migros")
+    s.turns = [Turn(reply_gsw="Bruuched Sie es Säckli?")]
+    assert suggest_replies(FakeClient(), s) == ["Ja, gern eine Tüte."]  # no repeat, no dialect
+
+
+def test_prepared_opening_starts_without_the_model():
+    opening = json.loads((DATA_DIR / "openings.json").read_text(encoding="utf-8"))
+    assert {s.id for s in SCENARIOS} == set(opening)
+    for lang in ("en", "de"):
+        s = Session("sbb", help_lang=lang)
+        turn = s.open_with(opening["sbb"])
+        assert turn.reply_gsw == opening["sbb"]["gsw"] and turn.reply_de and turn.suggestions_de
+        assert bool(turn.reply_help) == (lang == "en")
+        assert s.history[-1] == {"role": "assistant", "content": turn.reply_gsw}
 
 
 def test_session_history_is_bounded():
@@ -127,7 +176,7 @@ def test_learner_testset_is_consistent():
 
 def test_scenarios_have_all_ui_languages():
     for s in SCENARIOS:
-        assert {"en", "de", "ru"} <= set(s.title) and {"en", "de", "ru"} <= set(s.goal)
+        assert set(s.title) == {"en", "de"} == set(s.goal)
 
 
 def test_client_switches_to_the_fallback_model_when_throttled(monkeypatch):
@@ -151,3 +200,16 @@ def test_client_switches_to_the_fallback_model_when_throttled(monkeypatch):
     monkeypatch.setattr(c.client.chat.completions, "create", create)
     reply = c.chat([{"role": "user", "content": "Hallo"}])
     assert reply.text == "Grüezi" and reply.model == "small" and asked == ["big", "small"]
+
+
+def test_a_male_reference_voice_replaces_only_the_male_roles(monkeypatch, tmp_path):
+    import dataclasses
+
+    from losemal import tts
+
+    own = tmp_path / "speaker.wav"
+    own.write_bytes(b"")
+    (tmp_path / "speaker.txt").write_text("Grüezi mitenand", encoding="utf-8")
+    monkeypatch.setattr(tts, "settings", dataclasses.replace(tts.settings, tts_ref_wav_m=str(own)))
+    assert tts.voice_files("m") == (str(own), "Grüezi mitenand")
+    assert tts.voice_files("f")[0].endswith("vreni.wav")

@@ -63,6 +63,8 @@ class ApertusClient:
             raise LLMError("LLM_API_KEY is not set. See .env.example.")
         self.client = OpenAI(base_url=base_url or settings.llm_base_url, api_key=key,
                              timeout=settings.llm_timeout, max_retries=0)
+        # The app fires several short calls in the background; extra ones wait here instead of being refused.
+        self._slots = threading.BoundedSemaphore(max(1, settings.llm_concurrency))
         # Message format the endpoint accepts, learnt from its HTTP 400s and kept for the session:
         # 0 = as is, 1 = system prompt folded into the first user turn, 2 = whole conversation in one user turn.
         # Featherless is known to need 2, which saves two rejected requests (5-10 s) after every start.
@@ -79,8 +81,10 @@ class ApertusClient:
             msgs = (messages, fold_system(messages), flatten_conversation(messages))[mode]
             t0 = time.time()
             try:
-                r = self.client.chat.completions.create(
-                    model=self.model, messages=msgs, temperature=temperature, max_tokens=max_tokens)
+                with self._slots:
+                    t0 = time.time()  # time the request itself, not the wait for a slot
+                    r = self.client.chat.completions.create(
+                        model=self.model, messages=msgs, temperature=temperature, max_tokens=max_tokens)
                 text = (r.choices[0].message.content or "").strip()
                 if not text:
                     raise LLMError("empty response")

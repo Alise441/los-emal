@@ -35,11 +35,15 @@ def pick_device(pref: str = "auto") -> str:
 
 
 def voice_files(voice: str) -> tuple[str, str]:
-    """Reference wav + transcript for voice 'f' or 'm'; falls back to the configured default."""
-    default_wav = Path(settings.tts_ref_wav)
-    cand = default_wav.with_name(f"vreni{'' if voice == 'f' else '_m'}.wav") if default_wav.name == "vreni.wav" else default_wav
-    wav = cand if cand.exists() else default_wav
-    text = settings.tts_ref_text
+    """Reference wav + transcript for voice 'f' or 'm'. TTS_REF_WAV replaces both voices, TTS_REF_WAV_M only the
+    male one (female roles then keep the synthetic voice)."""
+    if voice == "m" and settings.tts_ref_wav_m:
+        wav, text = Path(settings.tts_ref_wav_m), settings.tts_ref_text_m
+    else:
+        default_wav = Path(settings.tts_ref_wav)
+        cand = (default_wav.with_name(f"vreni{'' if voice == 'f' else '_m'}.wav") if default_wav.name == "vreni.wav"
+                else default_wav)
+        wav, text = (cand if cand.exists() else default_wav), settings.tts_ref_text
     if not text:
         txt = wav.with_suffix(".txt")
         text = txt.read_text(encoding="utf-8").strip() if txt.exists() else ""
