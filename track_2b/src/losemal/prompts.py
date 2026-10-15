@@ -41,6 +41,9 @@ ADDRESS = {
     "du": "Ihr duzt euch (Hoi, «Häsch du …?», Tschüss).",
 }
 
+# The prompt the fine-tuned translator was trained with (E5): one user message, nothing else.
+FINETUNED_TRANSLATE = "Übersetze ins Zürichdeutsche (Züritüütsch):\n{de}"
+
 # Standard German -> Zurich German, the prompt measured in E3. In the app (with the style guide) it gives the
 # learner's own sentence the way a local would say it, in a separate call that cannot mix it up with the reply.
 TRANSLATE_TO_ZURICH = ("Du übersetzt Hochdeutsch ins Zürichdeutsche (Züritüütsch), so wie eine Person aus der Stadt "
@@ -70,20 +73,37 @@ Antworte IMMER mit genau einem JSON-Objekt, ohne weiteren Text:
   "scene_done": true | false
 }"""
 
+# DIALOGUE=de: Apertus writes Standard German, which it handles far better, and a translator turns it into Zurich
+# German (E5: a fine-tuned 8B translates better than Apertus writes the dialect itself).
+TURN_SCHEMA_DE = """\
+Antworte IMMER mit genau einem JSON-Objekt, ohne weiteren Text:
+{
+  "reply_de": "deine nächste Äusserung in der Rolle, auf Schweizer Hochdeutsch",
+  "scene_done": true | false
+}"""
+REPLY_KEY = {"gsw": "reply_gsw", "de": "reply_de"}
 
-def example_dialogue(sc: Scenario) -> str:
-    return "\n".join(("Du: " if i % 2 == 0 else "Lernende Person: ") + line for i, line in enumerate(sc.example))
+
+def example_dialogue(sc: Scenario, dialogue: str = "gsw") -> str:
+    lines = sc.example_de if dialogue == "de" else sc.example
+    return "\n".join(("Du: " if i % 2 == 0 else "Lernende Person: ") + line for i, line in enumerate(lines))
 
 
 # Every instruction says what to do: the old «don't» rules did not stop the model from repeating the price, and
 # the sample conversation does most of the work (see Scenario.example).
-def system_prompt(sc: Scenario, level: str) -> str:
-    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton, Dialekt und Ablauf; du reagierst immer auf das, "
-               f"was die lernende Person wirklich sagt):\n{example_dialogue(sc)}\n") if sc.example else ""
+def system_prompt(sc: Scenario, level: str, dialogue: str = "gsw") -> str:
+    de = dialogue == "de"
+    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton{'' if de else ', Dialekt'} und Ablauf; du reagierst "
+               f"immer auf das, was die lernende Person wirklich sagt):\n{example_dialogue(sc, dialogue)}\n"
+               ) if sc.example else ""
+    speech = ("Du spielst eine Person aus Zürich. Schreib, was sie sagt, auf Schweizer Hochdeutsch, so wie man spricht:\n"
+              "kurze Sätze, Schweizer Wörter (Gipfeli, Billett, Velo, Znüni, Trottoir). Deine Sätze werden danach\n"
+              "ins Züritüütsch übersetzt; die lernende Person hört sie auf Züritüütsch und antwortet auf Hochdeutsch."
+              if de else "Genau das üben wir: Du sprichst Züritüütsch, die lernende Person antwortet auf Hochdeutsch.")
     return f"""\
 Du bist Teil der App «Los emal!», mit der Zugezogene lernen, Zürichdeutsch zu VERSTEHEN.
 In Zürich ist es normal, dass Zugezogene auf Hochdeutsch antworten, während Einheimische Dialekt sprechen.
-Genau das üben wir: Du sprichst Züritüütsch, die lernende Person antwortet auf Hochdeutsch.
+{speech}
 
 Situation: {sc.setting}
 Deine Rolle: {sc.role}. Bleib in der Rolle und führe das Gespräch natürlich weiter.
@@ -93,16 +113,16 @@ Du kennst dich in deiner Rolle aus und hilfst konkret mit dem, was du weisst.
 Ablauf: {sc.steps} Jede deiner Äusserungen bringt das Gespräch einen Schritt weiter; was geklärt ist, bleibt geklärt.
 {LEVELS.get(level, LEVELS['B1'])}
 {example}
-{DIALECT_RULES}
+{'' if de else DIALECT_RULES}
 
 Aufgaben in jeder Runde:
-1. reply_gsw: deine nächste Äusserung in der Rolle, auf Züritüütsch. Hat die lernende Person etwas gefragt,
+1. {REPLY_KEY[dialogue]}: deine nächste Äusserung in der Rolle, auf {'Schweizer Hochdeutsch' if de else 'Züritüütsch'}. Hat die lernende Person etwas gefragt,
    beantworte das zuerst konkret; danach höchstens eine kurze Frage, damit das Gespräch weitergeht.
 2. scene_done: true, sobald der Ablauf zu Ende ist; dann ist deine Äusserung ein kurzer Abschiedsgruss.
 Du reagierst inhaltlich auf ihre Antworten, wie im echten Leben; ob sie dich verstanden hat, prüft die App separat.
 Hat sie etwas anderes verstanden, sag es in der Rolle einfacher noch einmal.
 
-{TURN_SCHEMA}"""
+{TURN_SCHEMA_DE if de else TURN_SCHEMA}"""
 
 
 # Evaluation only (E4): the app no longer corrects the learner's German. Inside the role-play turn the model
@@ -137,18 +157,18 @@ def comprehension_message(said_gsw: str, said_de: str, answer: str, help_lang: s
                                       lang=HELP_LANGS.get(help_lang, HELP_LANGS["en"]))
 
 
-def opening_message(level: str = "B1") -> str:
+def opening_message(level: str = "B1", dialogue: str = "gsw") -> str:
     return (f"Die Szene beginnt jetzt. Sprich die lernende Person zuerst an "
-            f"(reply_gsw: höchstens {REPLY_LENGTH.get(level, REPLY_LENGTH['B1'])}). "
+            f"({REPLY_KEY[dialogue]}: höchstens {REPLY_LENGTH.get(level, REPLY_LENGTH['B1'])}). "
             "Antworte nur mit JSON.")
 
 
-def learner_message(text: str, level: str = "B1", role: str = "", address: str = "") -> str:
+def learner_message(text: str, level: str = "B1", role: str = "", address: str = "", dialogue: str = "gsw") -> str:
     # The role and the form of address are repeated each turn: further into the conversation the model fell
     # out of its role and from «Sie» into «du».
     you = f"Du bist weiterhin: {role}" + (f", per {address}" if address else "") + ". " if role else ""
     return (f"{you}Die lernende Person antwortet dir (Hochdeutsch, Text aus Spracherkennung, kann Fehler haben):\n"
-            f"«{text}»\nAntworte ihr in deiner Rolle (reply_gsw: höchstens "
+            f"«{text}»\nAntworte ihr in deiner Rolle ({REPLY_KEY[dialogue]}: höchstens "
             f"{REPLY_LENGTH.get(level, REPLY_LENGTH['B1'])}). Antworte nur mit JSON.")
 
 

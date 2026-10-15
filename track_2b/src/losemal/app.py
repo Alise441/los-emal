@@ -41,6 +41,7 @@ log = logging.getLogger("losemal")
 asr = ASR()
 tts = TTS()
 _client: ApertusClient | None = None
+_translator: ApertusClient | None = None
 AUDIO_DIR = Path(tempfile.mkdtemp(prefix="losemal-audio-")).resolve()  # synthesised lines, for the browser
 atexit.register(shutil.rmtree, AUDIO_DIR, ignore_errors=True)
 
@@ -50,6 +51,20 @@ def client() -> ApertusClient:
     if _client is None:
         _client = ApertusClient(fallback=fallback_model())
     return _client
+
+
+def translator() -> ApertusClient:
+    """Who turns Standard German into Zurich German (DIALOGUE=de, "how a local would say it"): a fine-tuned model
+    behind GSW_BASE_URL (see E5 in the technical report), otherwise Apertus itself."""
+    global _translator
+    if _translator is None:
+        if settings.gsw_base_url:
+            _translator = ApertusClient(model=settings.gsw_model, base_url=settings.gsw_base_url,
+                                        api_key=settings.gsw_api_key)
+            _translator.fine_tuned = True
+        else:
+            _translator = client()
+    return _translator
 
 
 def fallback_model() -> str:
@@ -323,7 +338,9 @@ def status_md() -> str:
             return f"{name}: ⚠️ unavailable"
         return f"{name}: {'ready' if obj._model is not None else 'loading…'}"
     model = _client.model if _client else settings.llm_name  # shows a switch to the fallback model
-    return f"<small>Apertus: <code>{e(model)}</code> · {part('ASR', asr)} · {part('TTS', tts)}</small>"
+    zurich = f"<code>{e(settings.gsw_model)}</code> (local)" if settings.gsw_base_url else "Apertus"
+    return (f"<small>Apertus: <code>{e(model)}</code> · lines written in {'Standard German' if settings.dialogue == 'de' else 'Zurich German'}"
+            f" · Zurich German by {zurich} · {part('ASR', asr)} · {part('TTS', tts)}</small>")
 
 
 def waveform(wav: np.ndarray, n: int = 52) -> list[int]:
@@ -721,7 +738,7 @@ def build() -> gr.Blocks:
             jobs = {}
             if i not in state["audio"] and tts.enabled:
                 jobs[pool.submit(make_clip, turn.reply_gsw, sc.voice)] = ("audio", i)
-            if not turn.reply_de:
+            if not turn.reply_de or (lang_ != "de" and not turn.reply_help):
                 jobs[pool.submit(translate, client(), turn, lang_, sc)] = ("translation", i)
             if not turn.suggestions_de and not sess.done:
                 jobs[pool.submit(suggest_replies, client(), sess)] = ("ideas", i)
@@ -833,7 +850,7 @@ def build() -> gr.Blocks:
                 if clip or not tts.enabled:  # otherwise the local types until the audio is synthesised
                     state.update(shown=1, typing=False)
             yield page(state, lang_)
-            yield from run(state, {} if opening else {"line": (sess.start, (client(),))})
+            yield from run(state, {} if opening else {"line": (sess.start, (client(), translator()))})
 
         def opener(scenario_id: str):
             def go(level_, lang_, show_text, current, scenes):
@@ -901,9 +918,9 @@ def build() -> gr.Blocks:
 
         def answer_steps(sess: Session, text: str) -> dict:
             """The next line and, alongside, the two checks of the answer."""
-            return {"line": (sess.reply, (client(), text)),
+            return {"line": (sess.reply, (client(), text, translator())),
                     "check": (check_comprehension, (client(), sess.turns[-1], text, sess.help_lang)),
-                    "local": (local_version, (client(), text))}
+                    "local": (local_version, (translator(), text))}
 
         # "multiple": the previous line's event may still be preparing its translations in the background;
         # with Gradio's default ("once") an answer sent meanwhile was silently dropped.

@@ -53,6 +53,9 @@ def test_local_version_is_a_real_translation():
     learner = "Kann ich mit Karte bezahlen?"
     assert clean_local("«Chan ich mit Charte zahle?»\nOder: ...", learner) == "Chan ich mit Charte zahle?"
     assert clean_local("Kann ich mit Karte zahlen?", learner) == ""  # copied, not translated
+    assert clean_local("Kann ich mit Charte bezahlen?", learner) == ""  # one word changed: not worth showing
+    learner = "Nehmen Sie das Tram 3 Richtung Klusplatz bis zur Haltestelle Kunsthaus."  # many names, four dialect words
+    assert clean_local("Nehmed Sie s Tram 3 Richtig Klusplatz bis zur Haltestell Kunsthaus.", learner)
 
 
 def test_to_turn_falls_back_to_raw_text():
@@ -147,6 +150,40 @@ def test_prepared_opening_starts_without_the_model():
         assert turn.reply_gsw == opening["sbb"]["gsw"] and turn.reply_de and turn.suggestions_de
         assert bool(turn.reply_help) == (lang == "en")
         assert s.history[-1] == {"role": "assistant", "content": turn.reply_gsw}
+
+
+class FakeTranslator:
+    """A fine-tuned translator: answers its training prompt only."""
+    fine_tuned = True
+
+    def __init__(self):
+        self.seen = []
+
+    def chat(self, messages, **kw):
+        self.seen.append(messages)
+        assert len(messages) == 1 and messages[0]["content"].startswith("Übersetze ins Zürichdeutsche (Züritüütsch):\n")
+        return LLMReply("Zwei Gipfeli und es Ruchbrot, bitte.", 0.1, "fake")
+
+
+class FakeDialogue:
+    """Apertus writing the local's lines in Standard German (DIALOGUE=de)."""
+
+    def chat_json(self, messages, **kw):
+        assert "reply_de" in messages[0]["content"] and "Regeln für Stadtzürcher Dialekt" not in messages[0]["content"]
+        return {"reply_de": "Gern. Sonst noch etwas?", "scene_done": False}, LLMReply("{}", 0.2, "fake")
+
+
+def test_standard_german_dialogue_is_translated_by_the_fine_tuned_model():
+    from losemal.tutor import local_version
+    tr = FakeTranslator()
+    s = Session("baeckerei", dialogue="de")
+    s.open_with(json.loads((DATA_DIR / "openings.json").read_text(encoding="utf-8"))["baeckerei"])
+    assert s.history[-1]["content"] == "Grüezi! Was darf es sein?"  # the model sees its own Standard German
+    t = s.reply(FakeDialogue(), "Zwei Gipfeli und ein Ruchbrot, bitte.", tr)
+    assert t.reply_de == "Gern. Sonst noch etwas?" and t.reply_gsw == "Zwei Gipfeli und es Ruchbrot, bitte."
+    assert s.history[-1] == {"role": "assistant", "content": "Gern. Sonst noch etwas?"}
+    assert local_version(tr, "Ich hätte gern zwei Gipfeli und ein Brot.") == "Zwei Gipfeli und es Ruchbrot, bitte."
+    assert "Lernende Person: Zwei Gipfeli und ein Ruchbrot, bitte." in system_prompt(BY_ID["baeckerei"], "B1", "de")
 
 
 def test_session_history_is_bounded():
