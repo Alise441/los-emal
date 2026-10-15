@@ -24,9 +24,9 @@ class Settings:
     llm_log: str = _env("LLM_LOG")  # JSONL file for every request/response (debugging; contains learner input)
     llm_fallback_name: str = _env("LLM_FALLBACK_NAME")  # model to switch to when LLM_NAME is throttled (429)
     llm_concurrency: int = int(_env("LLM_CONCURRENCY", "2"))  # requests at once per client (Featherless allows 2)
-    # The local's lines: Apertus writes them in Zurich German (gsw), or in Standard German and they are then
-    # translated (de). The translator also gives "how a local would say it".
-    dialogue: str = _env("DIALOGUE", "gsw")
+    # The local's lines: Apertus writes them in Standard German and they are then translated into Zurich German
+    # (de), or Apertus writes Zurich German itself (gsw). The translator also gives "how a local would say it".
+    dialogue: str = _env("DIALOGUE", "de")
     # Translator Standard German -> Zurich German: an OpenAI-compatible endpoint with a model fine-tuned for it
     # (e.g. mlx_lm.server); empty = Apertus itself (LLM_NAME) with the E3 prompt
     gsw_base_url: str = _env("GSW_BASE_URL")

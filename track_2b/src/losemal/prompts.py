@@ -2,6 +2,8 @@
 "how a local would say it" call and the glossary; the role-play uses DIALECT_RULES and a sample conversation."""
 from __future__ import annotations
 
+import re
+
 from .scenarios import Scenario
 
 # Stadtzürcher forms vs. forms from other regions that Apertus tends to mix in
@@ -39,6 +41,10 @@ DIALECT_RULES = """Regeln für Stadtzürcher Dialekt (Züritüütsch), geschrieb
 ADDRESS = {
     "Sie": "Du sprichst die lernende Person mit «Sie» an (Grüezi, «Händ Sie …?», Uf Widerluege).",
     "du": "Ihr duzt euch (Hoi, «Häsch du …?», Tschüss).",
+}
+ADDRESS_DE = {
+    "Sie": "Du sprichst die lernende Person mit «Sie» an (Grüezi, «Haben Sie …?», Auf Wiedersehen).",
+    "du": "Ihr duzt euch (Hoi, «Hast du …?», Tschüss).",
 }
 
 # The prompt the fine-tuned translator was trained with (E5): one user message, nothing else.
@@ -92,18 +98,14 @@ def example_dialogue(sc: Scenario, dialogue: str = "gsw") -> str:
 # Every instruction says what to do: the old «don't» rules did not stop the model from repeating the price, and
 # the sample conversation does most of the work (see Scenario.example).
 def system_prompt(sc: Scenario, level: str, dialogue: str = "gsw") -> str:
-    de = dialogue == "de"
-    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton{'' if de else ', Dialekt'} und Ablauf; du reagierst "
-               f"immer auf das, was die lernende Person wirklich sagt):\n{example_dialogue(sc, dialogue)}\n"
-               ) if sc.example else ""
-    speech = ("Du spielst eine Person aus Zürich. Schreib, was sie sagt, auf Schweizer Hochdeutsch, so wie man spricht:\n"
-              "kurze Sätze, Schweizer Wörter (Gipfeli, Billett, Velo, Znüni, Trottoir). Deine Sätze werden danach\n"
-              "ins Züritüütsch übersetzt; die lernende Person hört sie auf Züritüütsch und antwortet auf Hochdeutsch."
-              if de else "Genau das üben wir: Du sprichst Züritüütsch, die lernende Person antwortet auf Hochdeutsch.")
+    if dialogue == "de":
+        return system_prompt_de(sc, level)
+    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton, Dialekt und Ablauf; du reagierst immer auf das, "
+               f"was die lernende Person wirklich sagt):\n{example_dialogue(sc)}\n") if sc.example else ""
     return f"""\
 Du bist Teil der App «Los emal!», mit der Zugezogene lernen, Zürichdeutsch zu VERSTEHEN.
 In Zürich ist es normal, dass Zugezogene auf Hochdeutsch antworten, während Einheimische Dialekt sprechen.
-{speech}
+Genau das üben wir: Du sprichst Züritüütsch, die lernende Person antwortet auf Hochdeutsch.
 
 Situation: {sc.setting}
 Deine Rolle: {sc.role}. Bleib in der Rolle und führe das Gespräch natürlich weiter.
@@ -113,16 +115,45 @@ Du kennst dich in deiner Rolle aus und hilfst konkret mit dem, was du weisst.
 Ablauf: {sc.steps} Jede deiner Äusserungen bringt das Gespräch einen Schritt weiter; was geklärt ist, bleibt geklärt.
 {LEVELS.get(level, LEVELS['B1'])}
 {example}
-{'' if de else DIALECT_RULES}
+{DIALECT_RULES}
 
 Aufgaben in jeder Runde:
-1. {REPLY_KEY[dialogue]}: deine nächste Äusserung in der Rolle, auf {'Schweizer Hochdeutsch' if de else 'Züritüütsch'}. Hat die lernende Person etwas gefragt,
+1. reply_gsw: deine nächste Äusserung in der Rolle, auf Züritüütsch. Hat die lernende Person etwas gefragt,
    beantworte das zuerst konkret; danach höchstens eine kurze Frage, damit das Gespräch weitergeht.
 2. scene_done: true, sobald der Ablauf zu Ende ist; dann ist deine Äusserung ein kurzer Abschiedsgruss.
 Du reagierst inhaltlich auf ihre Antworten, wie im echten Leben; ob sie dich verstanden hat, prüft die App separat.
 Hat sie etwas anderes verstanden, sag es in der Rolle einfacher noch einmal.
 
-{TURN_SCHEMA_DE if de else TURN_SCHEMA}"""
+{TURN_SCHEMA}"""
+
+
+# DIALOGUE=de: the model only plays its role in Swiss Standard German. The dialect, the app's purpose and the
+# translation are not its business: they made the prompt longer, and the scenes' typical Zurich phrases (and Zurich
+# examples of the form of address) invited dialect into a text that is translated afterwards.
+def system_prompt_de(sc: Scenario, level: str) -> str:
+    setting = re.sub(r"\s*Typisch:.*$", "", sc.setting)
+    example = (f"\nSo kann das Gespräch klingen (Vorbild für Ton und Ablauf; du reagierst immer auf das, was die "
+               f"lernende Person wirklich sagt):\n{example_dialogue(sc, 'de')}\n") if sc.example_de else ""
+    return f"""\
+Du spielst eine Person in Zürich in einer Alltagssituation. Du sprichst Schweizer Hochdeutsch, so wie man im Alltag
+spricht: kurze Sätze, Schweizer Wörter (Gipfeli, Billett, Velo, Znüni, Trottoir).
+
+Situation: {setting}
+Deine Rolle: {sc.role}. Bleib in der Rolle und führe das Gespräch natürlich weiter.
+Dein Gegenüber ist die lernende Person: {sc.learner} Was sie möchte, erfährst du von ihr.
+Du kennst dich in deiner Rolle aus und hilfst konkret mit dem, was du weisst.
+{ADDRESS_DE.get(sc.address, ADDRESS_DE["Sie"])}
+Ablauf: {sc.steps} Jede deiner Äusserungen bringt das Gespräch einen Schritt weiter; was geklärt ist, bleibt geklärt.
+{LEVELS.get(level, LEVELS['B1'])}
+{example}
+Aufgaben in jeder Runde:
+1. reply_de: deine nächste Äusserung in der Rolle. Hat die lernende Person etwas gefragt, beantworte das zuerst
+   konkret; danach höchstens eine kurze Frage, damit das Gespräch weitergeht.
+2. scene_done: true, sobald der Ablauf zu Ende ist; dann ist deine Äusserung ein kurzer Abschiedsgruss.
+Du reagierst inhaltlich auf ihre Antworten, wie im echten Leben.
+Hat sie etwas anderes verstanden, sag es in der Rolle einfacher noch einmal.
+
+{TURN_SCHEMA_DE}"""
 
 
 # Evaluation only (E4): the app no longer corrects the learner's German. Inside the role-play turn the model

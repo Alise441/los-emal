@@ -149,7 +149,9 @@ def test_prepared_opening_starts_without_the_model():
         turn = s.open_with(opening["sbb"])
         assert turn.reply_gsw == opening["sbb"]["gsw"] and turn.reply_de and turn.suggestions_de
         assert bool(turn.reply_help) == (lang == "en")
-        assert s.history[-1] == {"role": "assistant", "content": turn.reply_gsw}
+        assert s.history[-1] == {"role": "assistant", "content": turn.reply_de}  # DIALOGUE=de: its own Standard German
+    s = Session("sbb", dialogue="gsw")
+    assert s.open_with(opening["sbb"]) and s.history[-1]["content"] == opening["sbb"]["gsw"]
 
 
 class FakeTranslator:
@@ -170,7 +172,7 @@ class FakeDialogue:
 
     def chat_json(self, messages, **kw):
         assert "reply_de" in messages[0]["content"] and "Regeln für Stadtzürcher Dialekt" not in messages[0]["content"]
-        return {"reply_de": "Gern. Sonst noch etwas?", "scene_done": False}, LLMReply("{}", 0.2, "fake")
+        return {"reply_de": "Das macht 7.40, bar oder Karte?", "scene_done": False}, LLMReply("{}", 0.2, "fake")
 
 
 def test_standard_german_dialogue_is_translated_by_the_fine_tuned_model():
@@ -180,10 +182,34 @@ def test_standard_german_dialogue_is_translated_by_the_fine_tuned_model():
     s.open_with(json.loads((DATA_DIR / "openings.json").read_text(encoding="utf-8"))["baeckerei"])
     assert s.history[-1]["content"] == "Grüezi! Was darf es sein?"  # the model sees its own Standard German
     t = s.reply(FakeDialogue(), "Zwei Gipfeli und ein Ruchbrot, bitte.", tr)
-    assert t.reply_de == "Gern. Sonst noch etwas?" and t.reply_gsw == "Zwei Gipfeli und es Ruchbrot, bitte."
-    assert s.history[-1] == {"role": "assistant", "content": "Gern. Sonst noch etwas?"}
+    assert t.reply_de == "Das macht 7.40, bar oder Karte?" and t.reply_gsw == "Zwei Gipfeli und es Ruchbrot, bitte."
+    assert s.history[-1] == {"role": "assistant", "content": "Das macht 7.40, bar oder Karte?"}
     assert local_version(tr, "Ich hätte gern zwei Gipfeli und ein Brot.") == "Zwei Gipfeli und es Ruchbrot, bitte."
     assert "Lernende Person: Zwei Gipfeli und ein Ruchbrot, bitte." in system_prompt(BY_ID["baeckerei"], "B1", "de")
+
+
+class EchoTranslator:
+    """A fine-tuned translator that marks what it was given, and says goodbye the way the real one did."""
+    fine_tuned = True
+
+    def __init__(self):
+        self.seen = []
+
+    def chat(self, messages, **kw):
+        text = messages[0]["content"].split("\n", 1)[1]
+        self.seen.append(text)
+        return LLMReply("ZH: " + text.replace("Auf Wiedersehen", "Uf Wiederhersäge").replace("auf Wiedersehen", "uf Wiederhersäge"), 0.1, "fake")
+
+
+def test_greetings_and_farewells_come_from_the_checked_list():
+    from losemal.tutor import to_zurich
+    tr = EchoTranslator()
+    assert to_zurich(tr, "Gern. Sonst noch etwas?") == "Gärn. Suscht no öppis?" and tr.seen == []
+    # the whole line goes to the translator (context), the formula's sentence is then replaced
+    assert (to_zurich(tr, "Vielen Dank für Ihre Hilfe! Das ist nett. Auf Wiedersehen.")
+            == "ZH: Vielen Dank für Ihre Hilfe! Das ist nett. Uf Widerluege.")
+    assert tr.seen[-1] == "Vielen Dank für Ihre Hilfe! Das ist nett. Auf Wiedersehen."
+    assert to_zurich(tr, "Danke und auf Wiedersehen!") == "ZH: Danke und uf Widerluege!"  # inside a sentence
 
 
 def test_session_history_is_bounded():

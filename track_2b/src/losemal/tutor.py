@@ -193,7 +193,84 @@ def suggest_replies(client: ApertusClient, sess: Session) -> list[str]:
     return clean_suggestions([_s(x) for x in ideas if _s(x)] if isinstance(ideas, list) else [], said)[:2]
 
 
+# Greetings, thanks and farewells, checked by hand. The fine-tuned translator learnt from SwissDial's read
+# sentences, which hardly contain them, and invented words for them («Uf Wiederhersäge» for «Auf Wiedersehen»);
+# a sentence that is exactly one of these is taken from here. Keys: lower case, without punctuation.
+FORMULAS = {
+    "auf wiedersehen": "Uf Widerluege", "wiedersehen": "Uf Widerluege", "tschüss": "Tschüss", "ciao": "Ciao",
+    "danke tschüss": "Merci, tschüss", "danke auf wiedersehen": "Merci, uf Widerluege",
+    "guten tag": "Grüezi", "grüezi": "Grüezi", "grüss gott": "Grüezi", "hallo": "Hoi", "hoi": "Hoi", "sali": "Sali",
+    "guten morgen": "Guete Morge", "guten abend": "Guete Abig",
+    "danke": "Merci", "danke schön": "Merci vilmal", "dankeschön": "Merci vilmal", "vielen dank": "Merci vilmal",
+    "danke vielmals": "Merci vilmal", "herzlichen dank": "Merci vilmal", "besten dank": "Merci vilmal",
+    "gern geschehen": "Gärn gscheh", "gerne geschehen": "Gärn gscheh", "bitte schön": "Bitte schön",
+    "bitteschön": "Bitte schön", "bitte sehr": "Bitte schön",
+    "einen schönen tag noch": "En schöne Tag no", "noch einen schönen tag": "En schöne Tag no",
+    "schönen tag noch": "Schöne Tag no", "einen schönen abend noch": "En schöne Abig no",
+    "schönen abend noch": "Schöne Abig no", "schönes wochenende": "Schöns Wuchenänd",
+    "ein schönes wochenende": "Es schöns Wuchenänd", "bis später": "Bis spöter", "bis morgen": "Bis morn",
+    "bis bald": "Bis gli", "entschuldigung": "Exgüsi", "gute besserung": "Gueti Besserig", "gute reise": "Gueti Reis",
+    "kein problem": "Kei Problem", "sonst noch etwas": "Suscht no öppis", "was darf es sein": "Was dörfs sii",
+    "kommt sofort": "Chunnt sofort", "guten appetit": "En Guete", "gern": "Gärn", "gerne": "Gärn", "nein": "Nei",
+    "gut": "Guet", "sehr gut": "Sehr guet", "das klingt gut": "Das tönt guet", "danke das klingt gut": "Merci, das tönt guet",
+    # stock phrases of the scenes the translator got wrong every time
+    "haben sie ein halbtax": "Händ Sie es Halbtax", "haben sie eine cumulus-karte": "Händ Sie e Cumulus-Charte",
+    "brauchen sie eine tüte": "Bruuched Sie es Säckli", "einfach oder retour": "Eifach oder retour",
+}
+_SENTENCE = re.compile(r"[^.!?…]+[.!?…]*")
+
+
+def _formula(sentence: str) -> str | None:
+    key = re.sub(r"[^\w -]", "", sentence.lower().replace("ß", "ss")).split()
+    found = FORMULAS.get(" ".join(key))
+    if found is None:
+        return None
+    end = re.search(r"[.!?…]+$", sentence.strip())
+    return found + (end.group(0) if end else "")
+
+
 def to_zurich(client: ApertusClient, text: str) -> str:
+    """Standard German -> Zurich German. The translator gets the whole line (alone, a short fragment lost its
+    context: «Kaffee» became «Chüffi»); then each sentence that is a formula of FORMULAS is replaced by its
+    checked version. If the sentences do not line up, formulas are kept out and the rest is translated in pieces.
+    "" if a call fails."""
+    sentences = [p.strip() for p in _SENTENCE.findall(text) if p.strip()]
+    fixed = [_formula(x) for x in sentences]
+    if all(f is not None for f in fixed):
+        return " ".join(fixed)
+    if any(f is not None for f in fixed):
+        whole = translate_to_zurich(client, text)
+        if not whole:
+            return ""
+        parts = [p.strip() for p in _SENTENCE.findall(whole) if p.strip()]
+        if len(parts) == len(sentences):
+            return _fix_farewell(text, " ".join(f or q for f, q in zip(fixed, parts)))
+        out, chunk = [], []
+        for sentence, f in zip(sentences + [""], fixed + ["."]):  # a sentinel flushes the last piece
+            if f is None:
+                chunk.append(sentence)
+                continue
+            if chunk:
+                done = translate_to_zurich(client, " ".join(chunk))
+                if not done:
+                    return ""
+                out.append(done)
+                chunk = []
+            out.append(f if sentence else "")
+        return _fix_farewell(text, " ".join(x for x in out if x))
+    return _fix_farewell(text, translate_to_zurich(client, text))
+
+
+def _fix_farewell(text: str, result: str) -> str:
+    """«Auf Wiedersehen» inside a longer sentence: replace the invented forms seen so far."""
+    if result and "wiedersehen" in text.lower():
+        result = re.sub(r"(^|[.!?…] )?\b[Uu]fd? (?:Wi\w*|Us\w*)",
+                        lambda m: (m.group(1) or "") + ("Uf" if m.group(1) is not None or m.start() == 0 else "uf")
+                        + " Widerluege", result)
+    return result
+
+
+def translate_to_zurich(client: ApertusClient, text: str) -> str:
     """Standard German -> Zurich German, by a fine-tuned translator (client.fine_tuned, its training prompt) or by
     Apertus with the E3 prompt and style guide; "" if it fails."""
     if getattr(client, "fine_tuned", False):
