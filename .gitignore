@@ -25,3 +25,9 @@ build/
 .DS_Store
 .idea/
 .vscode/
+
+# Project
+results/
+.venv*/
+**/data/voices/candidates/
+logs/

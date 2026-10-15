@@ -1,0 +1,15 @@
+# App runtime. torch/torchaudio are installed separately (CPU build in the Dockerfile,
+# default PyPI build with Apple MPS support on a Mac).
+# gradio 6.18+ needs huggingface-hub>=1, but qwen-tts 0.1.1 pins transformers 4.57.3 (hub<1)
+gradio==6.17.3
+openai==3.29.0
+faster-whisper==1.2.1
+qwen-tts==0.1.1
+soundfile
+librosa
+numpy
+
+# Evaluation (src/eval)
+sacrebleu==2.6.0
+jiwer==4.0.0
+pytest

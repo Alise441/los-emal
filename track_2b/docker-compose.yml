@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      args:  # bake the same speech models the app is configured to use
+        ASR_MODEL: ${ASR_MODEL:-large-v3-turbo}
+        TTS_MODEL: ${TTS_MODEL:-Qwen/Qwen3-TTS-12Hz-0.6B-Base}
+    image: los-emal:latest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-7860}:7860"
+    environment:
+      # Apertus endpoint (OpenAI-compatible), names as required by the Hack Apertus template
+      LLM_NAME: ${LLM_NAME:-swiss-ai/apertus-v1.5-70b}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.publicai.co/v1}
+      LLM_API_KEY: ${LLM_API_KEY:?Set LLM_API_KEY (see .env.example)}
+      LLM_FALLBACK_NAME: ${LLM_FALLBACK_NAME:-}
+      # Open-weights speech models; the defaults are baked into the image (see Dockerfile)
+      ASR_MODEL: ${ASR_MODEL:-large-v3-turbo}
+      TTS_BACKEND: ${TTS_BACKEND:-qwen}
+      TTS_MODEL: ${TTS_MODEL:-Qwen/Qwen3-TTS-12Hz-0.6B-Base}
