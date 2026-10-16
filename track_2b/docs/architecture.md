@@ -2,22 +2,26 @@
 
 ```mermaid
 flowchart LR
-    U([Learner]) -- "speaks Standard German 🎙️" --> ASR
-    subgraph app["Los emal! — Docker container (on-premise / air-gapped capable)"]
-        ASR["Whisper large-v3-turbo<br/>faster-whisper, MIT"]
-        T["Tutor logic<br/>scenario · level · history<br/>validation · phrase list and fixes"]
-        TTS["Qwen3-TTS 0.6B/1.7B Base<br/>synthetic voices, Apache-2.0"]
+    U(["Learner"])
+    subgraph app["Docker container · on-premise / air-gapped capable"]
         UI["Gradio chat<br/>voice messages · text, translation<br/>and hints on request"]
+        ASR["Whisper large-v3-turbo<br/>speech → text"]
+        T["Tutor logic<br/>scenes · history · checked phrases<br/>and fixes for known slips"]
+        TTS["Qwen3-TTS Base<br/>text → speech, synthetic voices"]
     end
+    subgraph models["Swiss-hosted API or self-hosted (OpenAI-compatible)"]
+        LLM["Apertus 1.5 70B<br/>role-play in Swiss Standard German,<br/>translation into Zurich German,<br/>comprehension check, help"]
+        FT["Optional translator (GSW_BASE_URL)<br/>e.g. fine-tuned Apertus 8B<br/>(research, CC BY-NC, not submitted)"]
+    end
+    U -- "answers in Standard German" --> UI
+    UI -- audio --> ASR
     ASR -- text --> T
-    T -- "role-play · comprehension check ·<br/>translation into Zurich German ·<br/>English translation · words · answer ideas<br/>(at most 2 calls at a time, OpenAI API)" --> LLM["Apertus 1.5 70B<br/>Public AI (CH) · Infomaniak (CH)<br/>or self-hosted vLLM"]
-    LLM -- "line in Swiss Standard German,<br/>its Zurich German version,<br/>understood yes/no, help" --> T
-    T -.->|"optional (GSW_BASE_URL):<br/>Standard German → Zurich German"| FT["Translator endpoint<br/>e.g. Apertus 8B fine-tuned on SwissDial<br/>(research, CC BY-NC, not submitted)"]
-    FT -.->|"Zurich German"| T
     T -- "Zurich German line" --> TTS
     TTS -- audio --> UI
-    T --> UI
-    UI -- "hears Züritüütsch 🔊" --> U
+    UI -- "plays Zurich German" --> U
+    T <--> LLM
+    T -.-> FT
+    LLM ~~~ FT
 ```
 
 **One learner turn.**
