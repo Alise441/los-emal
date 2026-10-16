@@ -229,68 +229,6 @@
    "source": "apertus"
   }
  ],
- "sbb": [
-  {
-   "gsw": "eifach",
-   "de": "nur Hinfahrt",
-   "en": "one way",
-   "source": "apertus"
-  },
-  {
-   "gsw": "retour",
-   "de": "hin und zurück",
-   "en": "return",
-   "source": "apertus"
-  },
-  {
-   "gsw": "Eifach oder retour?",
-   "de": "Einfach oder retour?",
-   "en": "One way or return?",
-   "source": "apertus, corrected"
-  },
-  {
-   "gsw": "Erschti oder zweiti Klass?",
-   "de": "Erste oder zweite Klasse?",
-   "en": "First or second class?",
-   "source": "apertus"
-  },
-  {
-   "gsw": "Halbtax",
-   "de": "Halbtax-Abo: Fahrten zum halben Preis",
-   "en": "half-fare travelcard",
-   "source": "apertus, corrected"
-  },
-  {
-   "gsw": "Händ Sie es Halbtax?",
-   "de": "Haben Sie ein Halbtax?",
-   "en": "Do you have a half-fare card?",
-   "source": "apertus, corrected"
-  },
-  {
-   "gsw": "es Billett löse",
-   "de": "ein Billett kaufen",
-   "en": "to buy a ticket",
-   "source": "apertus, corrected"
-  },
-  {
-   "gsw": "Perron",
-   "de": "Bahnsteig",
-   "en": "platform",
-   "source": "added in review"
-  },
-  {
-   "gsw": "umstiige",
-   "de": "umsteigen",
-   "en": "to change trains",
-   "source": "added in review"
-  },
-  {
-   "gsw": "D Züg fahred jedi halbi Stund.",
-   "de": "Die Züge fahren jede halbe Stunde.",
-   "en": "Trains run every half hour.",
-   "source": "apertus, corrected"
-  }
- ],
  "nachbarin": [
   {
    "gsw": "Waschplan",

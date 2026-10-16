@@ -7,7 +7,7 @@ entry's "source" says whether it is Apertus' output, Apertus' output corrected, 
 Running this again overwrites the reviewed file.
 
     python -m losemal.make_glossary                 # all scenes (uses LLM_NAME / LLM_BASE_URL / LLM_API_KEY)
-    python -m losemal.make_glossary --scenes sbb    # only some scenes, the others are kept
+    python -m losemal.make_glossary --scenes tram   # only some scenes, the others are kept
 """
 from __future__ import annotations
 

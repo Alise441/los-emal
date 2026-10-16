@@ -64,11 +64,11 @@ def test_to_turn_falls_back_to_raw_text():
 
 
 def test_prompts_contain_scenario_and_help_language():
-    p = system_prompt(BY_ID["sbb"], "A2")
-    assert "Halbtax" in p and "nöd" in p and "reply_de" not in p  # translations come from separate calls
+    p = system_prompt(BY_ID["migros"], "A2")
+    assert "Cumulus" in p and "nöd" in p and "reply_de" not in p  # translations come from separate calls
     assert "ins Englische" in translate_message("Grüezi", "en") and "in English" in words_message("Grüezi", "en")
-    assert "Mitarbeiter am Schalter. SBB Reisezentrum im Hauptbahnhof Zürich" in translate_message(
-        "Eifach oder retour?", "en", scene_context(BY_ID["sbb"]))
+    assert "Kassierer. Migros-Filiale am Limmatplatz" in translate_message(
+        "Bruuched Sie es Säckli?", "en", scene_context(BY_ID["migros"]))
     assert "Gipfeli" in translate_message("Grüezi", "de")  # Swiss words stay in the Standard German version
 
 
@@ -145,13 +145,13 @@ def test_prepared_opening_starts_without_the_model():
     opening = json.loads((DATA_DIR / "openings.json").read_text(encoding="utf-8"))
     assert {s.id for s in SCENARIOS} == set(opening)
     for lang in ("en", "de"):
-        s = Session("sbb", help_lang=lang)
-        turn = s.open_with(opening["sbb"])
-        assert turn.reply_gsw == opening["sbb"]["gsw"] and turn.reply_de and turn.suggestions_de
+        s = Session("migros", help_lang=lang)
+        turn = s.open_with(opening["migros"])
+        assert turn.reply_gsw == opening["migros"]["gsw"] and turn.reply_de and turn.suggestions_de
         assert bool(turn.reply_help) == (lang == "en")
         assert s.history[-1] == {"role": "assistant", "content": turn.reply_de}  # DIALOGUE=de: its own Standard German
-    s = Session("sbb", dialogue="gsw")
-    assert s.open_with(opening["sbb"]) and s.history[-1]["content"] == opening["sbb"]["gsw"]
+    s = Session("migros", dialogue="gsw")
+    assert s.open_with(opening["migros"]) and s.history[-1]["content"] == opening["migros"]["gsw"]
 
 
 class FakeTranslator:
@@ -188,6 +188,16 @@ def test_standard_german_dialogue_is_translated_by_the_fine_tuned_model():
     assert "Lernende Person: Zwei Gipfeli und ein Ruchbrot, bitte." in system_prompt(BY_ID["baeckerei"], "B1", "de")
 
 
+def test_known_slips_of_the_translators_are_fixed():
+    from losemal.tutor import _fix_slips
+    assert _fix_slips("Zwei Gipfeli, bitte.", "Zwoi Gipfeli, bitte. Merci viu mol.") == "Zwei Gipfeli, bitte. Merci vil mol."
+    assert _fix_slips("Haben Sie Orangensaft?", "Haubi Orangensaft?") == "Händ Sie Orangensaft?"
+    assert _fix_slips("Hat es geklappt?", "Häter gschafft?") == "Hät s gschafft?"
+    assert (_fix_slips("Halten Sie die Karte ans Gerät. Möchten Sie bar zahlen?", "Händ Sie d Charte am Gäret. Möchted bar zahle?")
+            == "Hebed Sie d Charte as Grät. Möchted Sie bar zahle?")
+    assert _fix_slips("Zahlen Sie bar?", "Zahled Sie bar?") == "Zahled Sie bar?"  # no second «Sie»
+
+
 class EchoTranslator:
     """A fine-tuned translator that marks what it was given, and says goodbye the way the real one did."""
     fine_tuned = True
@@ -210,6 +220,7 @@ def test_greetings_and_farewells_come_from_the_checked_list():
             == "ZH: Vielen Dank für Ihre Hilfe! Das ist nett. Uf Widerluege.")
     assert tr.seen[-1] == "Vielen Dank für Ihre Hilfe! Das ist nett. Auf Wiedersehen."
     assert to_zurich(tr, "Danke und auf Wiedersehen!") == "ZH: Danke und uf Widerluege!"  # inside a sentence
+    assert to_zurich(tr, "Gern. Das kostet 2.50 Franken.") == "Gärn. Das kostet 2.50 Franken."  # 2.50 stays whole
 
 
 def test_session_history_is_bounded():

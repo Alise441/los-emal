@@ -178,49 +178,6 @@ SCENARIOS: list[Scenario] = [
         avatar="👩‍⚕️", who={"en": "The practice assistant", "de": "Die Praxisassistentin"},
     ),
     Scenario(
-        "sbb", "🚆",
-        {"en": "SBB ticket counter", "de": "SBB-Schalter"},
-        {"en": "Buy a return ticket to Lucerne for tomorrow. You have a Halbtax.",
-         "de": "Kaufe ein Retourbillett nach Luzern für morgen. Du hast ein Halbtax."},
-        "SBB Reisezentrum im Hauptbahnhof Zürich. Ein Retourbillett Zürich–Luzern kostet mit Halbtax in der "
-        "2. Klasse 27 Franken, in der 1. Klasse 47 Franken, ohne Halbtax das Doppelte; die Züge fahren jede halbe "
-        "Stunde. Typisch: «Eifach oder retour?» (eifach = nur Hinfahrt), «Erschti oder zweiti Klass?», "
-        "«Händ Sie es Halbtax?»",
-        "Mitarbeiter am Schalter",
-        "Die Person möchte ein Retourbillett nach Luzern für morgen kaufen. Sie hat ein Halbtax.",
-        voice="m",
-        address="Sie",
-        steps=("Ziel und Datum klären, eifach oder retour, Halbtax, Klasse, den Preis nennen, kassieren, eine gute "
-               "Reise wünschen."),
-        example=(
-            "Grüezi, wie chan ich Ihne hälfe?",
-            "Ich möchte ein Billett nach Luzern für morgen.",
-            "Gärn. Eifach oder retour?",
-            "Retour, bitte.",
-            "Händ Sie es Halbtax?",
-            "Ja, ich habe ein Halbtax.",
-            "Erschti oder zweiti Klass?",
-            "Zweite Klasse.",
-            "Das macht 27 Franke. D Züg fahred jedi halbi Stund.",
-            "Ich zahle mit Karte.",
-            "Merci, da isch Ihres Billett. Gueti Reis!",
-        ),
-        example_de=(
-            "Grüezi, wie kann ich Ihnen helfen?",
-            "Ich möchte ein Billett nach Luzern für morgen.",
-            "Gern. Nur Hinfahrt oder retour?",
-            "Retour, bitte.",
-            "Haben Sie ein Halbtax?",
-            "Ja, ich habe ein Halbtax.",
-            "Erste oder zweite Klasse?",
-            "Zweite Klasse.",
-            "Das macht 27 Franken. Die Züge fahren jede halbe Stunde.",
-            "Ich zahle mit Karte.",
-            "Danke, hier ist Ihr Billett. Gute Reise!",
-        ),
-        avatar="👨‍💼", who={"en": "The SBB clerk", "de": "Der SBB-Mitarbeiter"},
-    ),
-    Scenario(
         "nachbarin", "🏠",
         {"en": "Meeting the neighbour", "de": "Die Nachbarin im Treppenhaus"},
         {"en": "Introduce yourself and ask how the laundry room schedule works.",
@@ -404,5 +361,53 @@ SCENARIOS: list[Scenario] = [
     ),
 ]
 
-BY_ID = {s.id: s for s in SCENARIOS}
+# Not shown in the app any more (its ticket words were the hardest for the translators to get right); kept because
+# the E4 test set, data/learner_de_testset.jsonl, has 6 items from this scene.
+EVAL_ONLY: list[Scenario] = [
+    Scenario(
+        "sbb", "🚆",
+        {"en": "SBB ticket counter", "de": "SBB-Schalter"},
+        {"en": "Buy a return ticket to Lucerne for tomorrow. You have a Halbtax.",
+         "de": "Kaufe ein Retourbillett nach Luzern für morgen. Du hast ein Halbtax."},
+        "SBB Reisezentrum im Hauptbahnhof Zürich. Ein Retourbillett Zürich–Luzern kostet mit Halbtax in der "
+        "2. Klasse 27 Franken, in der 1. Klasse 47 Franken, ohne Halbtax das Doppelte; die Züge fahren jede halbe "
+        "Stunde. Typisch: «Eifach oder retour?» (eifach = nur Hinfahrt), «Erschti oder zweiti Klass?», "
+        "«Händ Sie es Halbtax?»",
+        "Mitarbeiter am Schalter",
+        "Die Person möchte ein Retourbillett nach Luzern für morgen kaufen. Sie hat ein Halbtax.",
+        voice="m",
+        address="Sie",
+        steps=("Ziel und Datum klären, eifach oder retour, Halbtax, Klasse, den Preis nennen, kassieren, eine gute "
+               "Reise wünschen."),
+        example=(
+            "Grüezi, wie chan ich Ihne hälfe?",
+            "Ich möchte ein Billett nach Luzern für morgen.",
+            "Gärn. Eifach oder retour?",
+            "Retour, bitte.",
+            "Händ Sie es Halbtax?",
+            "Ja, ich habe ein Halbtax.",
+            "Erschti oder zweiti Klass?",
+            "Zweite Klasse.",
+            "Das macht 27 Franke. D Züg fahred jedi halbi Stund.",
+            "Ich zahle mit Karte.",
+            "Merci, da isch Ihres Billett. Gueti Reis!",
+        ),
+        example_de=(
+            "Grüezi, wie kann ich Ihnen helfen?",
+            "Ich möchte ein Billett nach Luzern für morgen.",
+            "Gern. Nur Hinfahrt oder retour?",
+            "Retour, bitte.",
+            "Haben Sie ein Halbtax?",
+            "Ja, ich habe ein Halbtax.",
+            "Erste oder zweite Klasse?",
+            "Zweite Klasse.",
+            "Das macht 27 Franken. Die Züge fahren jede halbe Stunde.",
+            "Ich zahle mit Karte.",
+            "Danke, hier ist Ihr Billett. Gute Reise!",
+        ),
+        avatar="👨‍💼", who={"en": "The SBB clerk", "de": "Der SBB-Mitarbeiter"},
+    ),
+]
+
+BY_ID = {s.id: s for s in SCENARIOS + EVAL_ONLY}
 

@@ -147,43 +147,6 @@
    "Ich habe seit ein paar Tagen starke Halsschmerzen und bräuchte einen Arzttermin. Wie sieht es mit freien Terminen diese Woche aus?"
   ]
  },
- "sbb": {
-  "gsw": "Grüezi, wie chan ich Ihne hälfe?",
-  "de": "Grüezi, wie kann ich Ihnen helfen?",
-  "help": {
-   "en": "Hello, how can I assist you?"
-  },
-  "words": {
-   "en": [
-    {
-     "gsw": "chan",
-     "de": "kann",
-     "hint": "The Swiss German form of 'can', used to ask about ability or possibility."
-    },
-    {
-     "gsw": "Ihne",
-     "de": "Ihnen",
-     "hint": "The Swiss German dative form of 'you', used when addressing someone formally or when showing respect."
-    }
-   ],
-   "de": [
-    {
-     "gsw": "chan",
-     "de": "kann",
-     "hint": "Konjugation des Verbs 'können' im Schweizerdeutschen, bedeutet die Fähigkeit oder Erlaubnis, etwas zu tun."
-    },
-    {
-     "gsw": "Ihne",
-     "de": "Ihnen",
-     "hint": "Dativform von 'Sie' im Schweizerdeutschen, zeigt die indirekte Objektform an, vergleichbar mit 'Ihnen' auf Hochdeutsch."
-    }
-   ]
-  },
-  "ideas": [
-   "Grüezi, ich möchte ein Retourbillett nach Luzern für morgen kaufen. Ich habe ein Halbtax.",
-   "Könnten Sie mir bitte ein Retourbillett für Luzern in der 2. Klasse mit Halbtax besorgen?"
-  ]
- },
  "nachbarin": {
   "gsw": "Grüezi! Ich bi d Martha, ich wohne scho drissg Jahr da im Huus. Sie sind sicher neu da?",
   "de": "Grüezi! Ich bin die Martha, ich wohne schon dreissig Jahre hier im Haus. Sie sind sicher neu da?",

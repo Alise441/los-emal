@@ -6,7 +6,7 @@ The opening lines are reviewed by hand after generating; --keep-lines then regen
 for the reviewed lines. Running without it overwrites the lines too.
 
     python -m losemal.make_openings                 # all scenes (uses LLM_NAME / LLM_BASE_URL / LLM_API_KEY)
-    python -m losemal.make_openings --scenes sbb    # only some scenes, the others are kept
+    python -m losemal.make_openings --scenes tram   # only some scenes, the others are kept
     python -m losemal.make_openings --keep-lines    # keep the (reviewed) lines, redo translations, words, ideas
 """
 from __future__ import annotations

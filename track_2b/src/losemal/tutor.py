@@ -217,7 +217,7 @@ FORMULAS = {
     "haben sie ein halbtax": "Händ Sie es Halbtax", "haben sie eine cumulus-karte": "Händ Sie e Cumulus-Charte",
     "brauchen sie eine tüte": "Bruuched Sie es Säckli", "einfach oder retour": "Eifach oder retour",
 }
-_SENTENCE = re.compile(r"[^.!?…]+[.!?…]*")
+_SENTENCE = re.compile(r"(?:\d[.,:]\d|[^.!?…])+[.!?…]*")  # a point inside 7.40 does not end a sentence
 
 
 def _formula(sentence: str) -> str | None:
@@ -244,7 +244,7 @@ def to_zurich(client: ApertusClient, text: str) -> str:
             return ""
         parts = [p.strip() for p in _SENTENCE.findall(whole) if p.strip()]
         if len(parts) == len(sentences):
-            return _fix_farewell(text, " ".join(f or q for f, q in zip(fixed, parts)))
+            return _fix_slips(text, " ".join(f or q for f, q in zip(fixed, parts)))
         out, chunk = [], []
         for sentence, f in zip(sentences + [""], fixed + ["."]):  # a sentinel flushes the last piece
             if f is None:
@@ -257,12 +257,24 @@ def to_zurich(client: ApertusClient, text: str) -> str:
                 out.append(done)
                 chunk = []
             out.append(f if sentence else "")
-        return _fix_farewell(text, " ".join(x for x in out if x))
-    return _fix_farewell(text, translate_to_zurich(client, text))
+        return _fix_slips(text, " ".join(x for x in out if x))
+    return _fix_slips(text, translate_to_zurich(client, text))
 
 
-def _fix_farewell(text: str, result: str) -> str:
-    """«Auf Wiedersehen» inside a longer sentence: replace the invented forms seen so far."""
+# Slips the translators kept making in our tests: forms of other dialects (zwoi, viu), invented words (Haubi, Gäret),
+# wrong verbs (hat es -> «Häter», "has he"; halten Sie -> «händ Sie», "have you") and a dropped polite «Sie».
+FIXES = [(None, r"\b([Zz])woi\b", r"\1wei"), (None, r"\b([Vv])iu\b", r"\1il"), (None, r"\bGäret\b", "Grät"),
+         ("haben sie", r"\bHaubi\b", "Händ Sie"), ("hat es", r"\b([Hh])äter\b", r"\1ät s"),
+         ("halten sie", r"\b([Hh])(?:änd|alted)(?: Sie)? d Charte am\b", r"\1ebed Sie d Charte as"),
+         ("zahlen sie", r"\b([Zz])ahled (?!Sie\b)", r"\1ahled Sie "),
+         ("möchten sie", r"\b([Mm])öchted (?!Sie\b)", r"\1öchted Sie ")]
+
+
+def _fix_slips(text: str, result: str) -> str:
+    """Known slips of the translators; «Auf Wiedersehen» inside a longer sentence: the invented forms seen so far."""
+    for needed, wrong, right in FIXES:
+        if result and (needed is None or needed in text.lower()):
+            result = re.sub(wrong, right, result)
     if result and "wiedersehen" in text.lower():
         result = re.sub(r"(^|[.!?…] )?\b[Uu]fd? (?:Wi\w*|Us\w*)",
                         lambda m: (m.group(1) or "") + ("Uf" if m.group(1) is not None or m.start() == 0 else "uf")

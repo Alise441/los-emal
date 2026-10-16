@@ -15,6 +15,11 @@ services:
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.publicai.co/v1}
       LLM_API_KEY: ${LLM_API_KEY:?Set LLM_API_KEY (see .env.example)}
       LLM_FALLBACK_NAME: ${LLM_FALLBACK_NAME:-}
+      # Who writes the local's lines and who translates them into Zurich German (see .env.example)
+      DIALOGUE: ${DIALOGUE:-de}
+      GSW_BASE_URL: ${GSW_BASE_URL:-}
+      GSW_MODEL: ${GSW_MODEL:-default_model}
+      GSW_API_KEY: ${GSW_API_KEY:-local}
       # Open-weights speech models; the defaults are baked into the image (see Dockerfile)
       ASR_MODEL: ${ASR_MODEL:-large-v3-turbo}
       TTS_BACKEND: ${TTS_BACKEND:-qwen}
