@@ -3,7 +3,7 @@
 - **Track:** Track 2B — Los emal! (understand Zurich German with Apertus)
 - **Event:** Online
 - **Team:** Alina Ponomareva
-- **Demo:** VIDEO_LINK
+- **Demo:** [youtu.be/dR4Ah5yqL10](https://youtu.be/dR4Ah5yqL10)
 
 ## 1. Summary
 

@@ -16,7 +16,7 @@ the hardest dialect words on request and checks whether the learner understood. 
 understanding: it neither grades the learner's dialect nor corrects their German.
 
 Hack Apertus 2026 · Track 2B (own project). Code and technical report: [`track_2b/`](track_2b/)
-([PDF](track_2b/AlinaPonomareva_Report.pdf)). Demo video: VIDEO_LINK
+([PDF](track_2b/AlinaPonomareva_Report.pdf)). Demo video: [youtu.be/dR4Ah5yqL10](https://youtu.be/dR4Ah5yqL10)
 
 ## Quick start
 
